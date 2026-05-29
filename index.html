@@ -91,7 +91,7 @@ img{display:block;max-width:100%}
 .btn--full{width:100%}
 
 /* === INPUTS === */
-.float-wrap{position:relative;width:100%}
+.float-wrap{position:relative;width:100%;min-width:0}
 .input-field{width:100%;height:56px;border-radius:16px;border:1px solid var(--light-forms-outline);background:var(--light-forms-bg);padding:22px 16px 8px;font-size:16px;font-weight:500;color:var(--gd-bg);outline:none;transition:border .1s,background .1s,box-shadow .15s;font-family:var(--ff)}
 .input-field:hover{border-width:2px}
 .input-field:focus{border:4px solid var(--specific-focus);background:var(--light-forms-hover);box-shadow:var(--shadow-input)}
@@ -190,10 +190,11 @@ input[type="date"].input-field,input[type="time"].input-field{color-scheme:light
 .rating-label{font-size:13px;color:var(--grey-500);min-height:20px;text-align:center;margin-top:4px}
 
 /* === INPUT BAR === */
-.input-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:14px var(--sp-m) calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -3px 12px rgba(0,64,51,.08),0 -8px 20px rgba(0,64,51,.04);z-index:50}
+/* mobile: in-flow so virtual keyboard pushes it up naturally */
+.input-bar{position:relative;width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:14px var(--sp-m) calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -3px 12px rgba(0,64,51,.08),0 -8px 20px rgba(0,64,51,.04);z-index:50;flex-shrink:0}
 .input-bar:empty{display:none}
 .bar-inner{display:flex;flex-direction:column;gap:10px;animation:bar-in 250ms ease both}
-.bar-row{display:flex;gap:8px;align-items:center}
+.bar-row{display:flex;gap:8px;align-items:flex-end}
 .bar-hint{font-size:12px;font-weight:500;color:var(--light-helper);text-align:center}
 .chips-row{display:flex;gap:8px;flex-wrap:wrap}
 .hint-box{background:var(--gl-bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--gd-bg);line-height:1.6}
@@ -222,7 +223,8 @@ input[type="date"].input-field,input[type="time"].input-field{color-scheme:light
 
 /* === TABLET 768px+ === */
 @media(min-width:768px){
-  .input-bar{border-radius:20px;bottom:24px;box-shadow:-11px 11px 35px rgba(0,32,26,.2),-45px 44px 63px rgba(0,32,26,.1)}
+  /* back to fixed on tablet/desktop — keyboard handling not an issue there */
+  .input-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:20px;box-shadow:-11px 11px 35px rgba(0,32,26,.2),-45px 44px 63px rgba(0,32,26,.1)}
 }
 
 /* === DESKTOP 1024px+ — DS grid: 1000px fixed centered === */
@@ -383,10 +385,12 @@ spacer.id = 'chatSpacer';
 chat.appendChild(spacer);
 
 function syncPadding() {
-  // spacer approach: works in Firefox where padding-bottom is ignored in flex scroll containers
-  const offset = window.innerWidth >= 1024 ? 80 : window.innerWidth >= 768 ? 64 : 48;
-  spacer.style.height = (bar.offsetHeight + offset) + 'px';
-  chat.appendChild(spacer); // keep spacer as last child always
+  // mobile: bar is in-flow, no fixed overlap → minimal spacer
+  // tablet+: bar is fixed, spacer prevents last message hiding under bar
+  const isFixed = window.innerWidth >= 768;
+  const offset = window.innerWidth >= 1024 ? 80 : 64;
+  spacer.style.height = isFixed ? (bar.offsetHeight + offset) + 'px' : '16px';
+  chat.appendChild(spacer);
 }
 function updateChatPadding() { setTimeout(syncPadding, 60); }
 function scrollBot() {
