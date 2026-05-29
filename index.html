@@ -100,7 +100,7 @@ img{display:block;max-width:100%}
 /* date/time: label always small — browser shows its own placeholder */
 input[type="date"]~.float-label,input[type="time"]~.float-label,.float-label--always{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
 textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;resize:none;overflow-y:auto;line-height:1.5}
-input[type="date"].input-field,input[type="time"].input-field{color-scheme:light;padding-top:22px}
+input[type="date"].input-field,input[type="time"].input-field{color-scheme:light;padding-top:22px;height:56px!important;line-height:normal}
 
 /* === TAGS === */
 .tag{display:inline-flex;align-items:center;height:20px;border-radius:10px;padding:0 8px;font-size:12px;font-weight:600;letter-spacing:.6px;line-height:20px;white-space:nowrap;gap:4px}
@@ -481,7 +481,9 @@ async function step1() {
   setBar(`
     <div class="float-wrap"><input class="input-field" type="text" id="inFn" placeholder=" " autocomplete="given-name"><label class="float-label" for="inFn">Jméno</label></div>
     <div class="float-wrap"><input class="input-field" type="text" id="inLn" placeholder=" " autocomplete="family-name"><label class="float-label" for="inLn">Příjmení</label></div>
-    <div class="float-wrap"><input class="input-field" type="date" id="inDob" placeholder=" "><label class="float-label" for="inDob">Datum narození</label></div>
+    <div class="bar-row">
+      <div class="float-wrap" style="flex:0 0 calc(50% - 4px)"><input class="input-field" type="date" id="inDob" placeholder=" "><label class="float-label" for="inDob">Datum narození</label></div>
+    </div>
     <button class="btn btn--lg btn--primary btn--full" id="btnVerify">Ověřit identitu</button>
   `);
 
