@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Hlášení pojistné události — Direct</title>
+<style>
+/* === RESET === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:'Direct Sans',Arial,sans-serif;background:#004033;min-height:100vh}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,textarea,select{font-family:inherit}
+img{display:block;max-width:100%}
+
+/* === DS TOKENS === */
+:root{
+  --gd-bg:#004033;--gd-content:#F9FCE2;
+  --gdef-bg:#C4DE00;--gdef-content:#004033;--gdef-bg-light:#FFFFFF;
+  --gl-bg:#EAF3A3;--gl-content:#004033;
+  --light-bg:#C4E9DC;--light-bg-light:#FFFFFF;--light-content:#004033;
+  --light-content-sec:#006B55;--light-outline:#C4E9DC;--light-helper:#668C85;
+  --light-forms-bg:#FFFFFF;--light-forms-outline:#006B55;--light-forms-hover:#D1F3E7;
+  --success-bg:#6AE851;--success-content:#165313;
+  --error-bg:#D02B1D;--error-content:#FFF3F1;
+  --warning-bg:#FFB956;--warning-content:#6D1F00;
+  --dis-bg:#CCD9D6;--dis-content:#668C85;
+  --specific-focus:#006B55;
+  --grey-25:#F2F5F5;--grey-50:#E5ECEB;--grey-100:#CCD9D6;--grey-500:#668C85;
+  --ff:'Direct Sans',Arial,sans-serif;
+  --sp-xxs:8px;--sp-xs:16px;--sp-s:20px;--sp-m:24px;--sp-l:32px;--sp-xl:40px;
+  --r-s:8px;--r-m:20px;--r-l:28px;
+  --shadow-menu:0 3px 6px rgba(0,64,51,.03),0 12px 12px rgba(0,64,51,.03),0 26px 16px rgba(0,64,51,.02),0 46px 19px rgba(0,64,51,.01),0 72px 20px rgba(0,64,51,0);
+  --shadow-btn:-3px 3px 10px rgba(0,64,51,.13),-13px 12px 18px rgba(0,64,51,.12),-28px 28px 24px rgba(0,64,51,.07),-50px 50px 28px rgba(0,64,51,.02);
+  --shadow-input:-2px 2px 7px rgba(0,64,51,.08),-9px 8px 12px rgba(0,64,51,.07),-19px 19px 16px rgba(0,64,51,.04),-35px 34px 19px rgba(0,64,51,.01);
+}
+
+/* === LAYOUT === */
+.page-wrap{height:100dvh;overflow:hidden;background:linear-gradient(227deg,#005544 0%,#004033 100%);display:flex;flex-direction:column;align-items:center}
+
+/* === HEADER === */
+.chat-header{width:100%;max-width:600px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-m);height:56px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--grey-50)}
+.chat-header__brand{display:flex;align-items:center;gap:var(--sp-xxs)}
+.chat-header__logo{width:32px;height:32px;background:var(--gd-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#C4DE00;font-size:13px;font-weight:700;letter-spacing:.5px}
+.chat-header__title{font-size:14px;font-weight:600;color:var(--gd-bg);letter-spacing:.7px}
+.chat-header__step-label{font-size:12px;font-weight:500;color:var(--light-helper);letter-spacing:.24px}
+
+/* === STEPPER === */
+.stepper-wrap{width:100%;max-width:600px;padding:12px var(--sp-m) 4px;background:linear-gradient(227deg,#005544,#004033)}
+.stepper-pill{height:64px;border-radius:32px;background:#fff;box-shadow:var(--shadow-menu);padding:0 16px;display:flex;align-items:center}
+.step-circle{width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0;transition:background .4s,color .4s,border-color .4s}
+.step-circle--past{background:#EAF3A3;color:#004033;border:none}
+.step-circle--current{background:#C4DE00;color:#004033;border:none}
+.step-circle--future{background:#fff;color:#004033;border:1.5px solid #C4DE00}
+.step-bar{flex:1 0 0;height:2px;border-radius:100px;background:var(--dis-bg);overflow:hidden}
+.step-bar__fill{height:100%;width:0%;background:#EAF3A3;border-radius:100px;transition:width 1s ease}
+.stepper-labels{display:flex;margin-top:6px;padding-bottom:8px}
+.stepper-label{flex:1;text-align:center;font-size:11px;font-weight:500;color:#809F99;letter-spacing:.22px;transition:color .3s}
+.stepper-label--past{color:var(--grey-500)}
+.stepper-label--current{color:#C4DE00;font-weight:600}
+
+/* === CHAT === */
+.chat-area{flex:1;min-height:0;width:100%;max-width:600px;padding:16px var(--sp-m) 0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;background:#F2F5F5}
+#chatSpacer{flex-shrink:0;width:100%}
+
+/* === MESSAGES === */
+.msg{display:flex;gap:8px;animation:msg-in 300ms cubic-bezier(.34,1.56,.64,1) both}
+.msg--bot{align-items:flex-end;align-self:flex-start;max-width:88%}
+.msg--user{align-self:flex-end;flex-direction:row-reverse;max-width:80%}
+.msg__avatar{width:32px;height:32px;border-radius:50%;background:var(--gd-bg);display:flex;align-items:center;justify-content:center;color:#C4DE00;flex-shrink:0}
+.msg__bubble{background:#fff;border-radius:16px 16px 16px 4px;padding:12px 16px;box-shadow:var(--shadow-menu);font-size:14px;line-height:1.5;color:var(--gd-bg)}
+.msg--user .msg__bubble{background:var(--gdef-bg);border-radius:16px 16px 4px 16px;color:var(--gd-bg);box-shadow:none}
+.msg__card{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow-menu);width:100%}
+
+/* === TYPING === */
+.typing-dots{display:flex;align-items:center;gap:4px;padding:2px 0}
+.typing-dot{width:8px;height:8px;border-radius:50%;background:var(--grey-500);animation:dot-pulse 1.2s ease-in-out infinite}
+.typing-dot:nth-child(1){animation-delay:0s}.typing-dot:nth-child(2){animation-delay:.15s}.typing-dot:nth-child(3){animation-delay:.30s}
+
+/* === BUTTONS === */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:var(--ff);font-size:14px;font-weight:600;letter-spacing:.7px;border-radius:28px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none}
+.btn--lg{height:56px;padding:0 20px;border-radius:28px}
+.btn--md{height:36px;padding:0 12px;border-radius:18px}
+.btn--sm{height:32px;padding:0 10px;border-radius:16px}
+.btn--primary{background:linear-gradient(227deg,#005544 0%,#004033 100%);color:#F9FCE2;box-shadow:var(--shadow-btn)}
+.btn--primary:hover{background:#005544;box-shadow:none}
+.btn--secondary{background:#F9FCE2;color:#004033;border:1px solid #004033}
+.btn--secondary:hover{border-width:2px}
+.btn--tertiary{background:transparent;color:#004033;text-decoration:underline}
+.btn--tertiary:hover{text-decoration:none}
+.btn--full{width:100%}
+
+/* === INPUTS === */
+.float-wrap{position:relative;width:100%}
+.input-field{width:100%;height:56px;border-radius:16px;border:1px solid var(--light-forms-outline);background:var(--light-forms-bg);padding:22px 16px 8px;font-size:16px;font-weight:500;color:var(--gd-bg);outline:none;transition:border .1s,background .1s,box-shadow .15s;font-family:var(--ff)}
+.input-field:hover{border-width:2px}
+.input-field:focus{border:4px solid var(--specific-focus);background:var(--light-forms-hover);box-shadow:var(--shadow-input)}
+.float-label{position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:400;color:#006B55;pointer-events:none;transition:all .15s ease;transform-origin:left center;white-space:nowrap}
+.input-field:focus~.float-label,.input-field.has-val~.float-label{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
+/* date/time: label always small — browser shows its own placeholder */
+input[type="date"]~.float-label,input[type="time"]~.float-label,.float-label--always{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
+textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;resize:none;overflow-y:auto;line-height:1.5}
+input[type="date"].input-field,input[type="time"].input-field{color-scheme:light;padding-top:22px}
+
+/* === TAGS === */
+.tag{display:inline-flex;align-items:center;height:20px;border-radius:10px;padding:0 8px;font-size:12px;font-weight:600;letter-spacing:.6px;line-height:20px;white-space:nowrap;gap:4px}
+.tag--gdef{background:#C4DE00;color:#004033}.tag--gl{background:#EAF3A3;color:#004033}
+.tag--success{background:#6AE851;color:#165313}.tag--error{background:#D02B1D;color:#FFF3F1}
+.tag--warning{background:#FFB956;color:#6D1F00}.tag--grey{background:#fff;color:#809F99;border:1px solid #809F99}
+
+/* === CLIENT CARD === */
+.client-card{background:var(--gl-bg);border-radius:14px;padding:14px}
+.client-card__name{font-size:16px;font-weight:600;color:var(--gd-bg);margin-bottom:4px}
+.client-card__row{font-size:13px;color:#417523;margin-bottom:2px}
+.client-card__tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* === AI RESULT CARD === */
+.ai-card{border:1px solid var(--gl-bg);border-radius:14px;overflow:hidden}
+.ai-card__header{background:var(--gl-bg);padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--gd-bg)}
+.ai-card__body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ai-dmg-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--gd-bg)}
+
+/* === UPLOAD CARD === */
+.upload-card{border:2px dashed var(--gdef-bg);border-radius:14px;padding:24px 20px;text-align:center;background:#F9FCE2;position:relative}
+.upload-card.drag-over{border-color:var(--gd-bg);background:var(--gl-bg)}
+.upload-card__title{font-size:14px;font-weight:500;color:var(--gd-bg);margin:10px 0 4px}
+.upload-card__sub{font-size:12px;color:var(--light-helper);margin-bottom:14px}
+.upload-thumbs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.upload-thumb{width:72px;height:72px;border-radius:8px;object-fit:cover;background:var(--grey-100);display:flex;align-items:center;justify-content:center;color:var(--grey-500);font-size:11px;font-weight:500;overflow:hidden}
+.upload-thumb img{width:100%;height:100%;object-fit:cover}
+.upload-overlay{position:absolute;inset:0;background:rgba(249,252,226,.92);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.upload-overlay__text{font-size:13px;font-weight:500;color:var(--gd-bg)}
+
+/* === DAMAGE LIST === */
+.damage-list{display:flex;flex-direction:column;gap:8px}
+.dmg-item{display:flex;align-items:center;gap:8px;background:var(--grey-25);border-radius:10px;padding:8px 10px}
+.dmg-item__text{flex:1;font-size:14px;color:var(--gd-bg)}
+.dmg-item__del{width:24px;height:24px;border-radius:50%;background:var(--grey-100);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--grey-500);flex-shrink:0;transition:background .15s,color .15s;border:none;padding:0}
+.dmg-item__del:hover{background:var(--error-bg);color:#fff}
+
+/* === COVERAGE === */
+.coverage-list{display:flex;flex-direction:column}
+.cov-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--grey-50)}
+.cov-row:last-child{border-bottom:none}
+.cov-row__text{font-size:14px;color:var(--gd-bg);flex:1}
+.cov-row__actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.why-btn{font-size:11px;font-weight:600;color:var(--light-content-sec);background:var(--grey-25);border-radius:8px;padding:3px 8px;border:none;cursor:pointer;letter-spacing:.3px;white-space:nowrap}
+.why-btn:hover{background:var(--grey-50)}
+
+/* === INFOBOX === */
+.infobox{border-radius:20px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px}
+.infobox--error{background:var(--error-bg);color:#F9FCE2}
+.infobox--warning{background:var(--gl-bg);color:var(--gd-bg)}
+.infobox__text{font-size:14px;line-height:1.5}
+
+/* === FINANCE CARD === */
+.fin-card{border-radius:16px;overflow:hidden;border:1px solid var(--gdef-bg)}
+.fin-card__header{background:var(--gdef-bg);padding:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.fin-card__label{font-size:18px;font-weight:500;color:var(--gd-bg)}
+.fin-card__gross{font-size:24px;font-weight:500;color:var(--gd-bg);white-space:nowrap}
+.fin-card__period{font-size:11px;font-weight:500;color:#215A2B;text-align:right}
+.fin-card__body{background:#fff;padding:10px 16px}
+.fin-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--grey-50);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fin-row__label{color:var(--grey-500)}
+.fin-row__amount{color:var(--gd-bg);font-weight:500;white-space:nowrap}
+.fin-row--deductible .fin-row__label{color:var(--error-bg);font-weight:500}
+.fin-row--deductible .fin-row__amount{color:var(--error-bg);font-weight:600}
+.fin-row--total{border-top:2px solid var(--grey-100);padding-top:10px;margin-top:2px}
+.fin-row--total .fin-row__label{color:var(--gd-bg);font-weight:600;font-size:14px}
+.fin-row--total .fin-row__amount{color:var(--gd-bg);font-weight:700;font-size:15px}
+.fin-account{padding:12px 16px;background:var(--grey-25);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fin-account__num{font-size:12px;font-weight:500;color:var(--gd-bg);flex:1}
+.fin-account__change{font-size:12px;font-weight:600;color:var(--light-content-sec);text-decoration:underline;cursor:pointer;border:none;background:none;white-space:nowrap}
+.fin-card__footer{background:var(--gl-bg);padding:10px 16px;font-size:12px;font-weight:600;color:var(--gd-bg);display:flex;align-items:center;gap:6px}
+
+/* === SUCCESS CARD === */
+.success-card{text-align:center;padding:20px 12px}
+.success-icon{width:52px;height:52px;border-radius:50%;background:#6AE851;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#165313}
+.success-title{font-size:20px;font-weight:600;color:var(--gd-bg);margin-bottom:6px}
+.success-ref{font-size:12px;font-weight:500;color:var(--grey-500);background:var(--grey-25);border-radius:8px;padding:5px 12px;display:inline-block;margin-bottom:10px}
+.success-note{font-size:13px;color:#417523;line-height:1.5}
+
+/* === STARS === */
+.star-rating{display:flex;gap:6px;justify-content:center;margin:6px 0}
+.star-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--grey-100);transition:transform .1s,color .1s;padding:0;border-radius:50%}
+.star-btn:hover{transform:scale(1.15)}
+.star-btn.lit{color:var(--gdef-bg)}
+.star-btn.bounce{animation:star-bounce .4s ease}
+.rating-label{font-size:13px;color:var(--grey-500);min-height:20px;text-align:center;margin-top:4px}
+
+/* === INPUT BAR === */
+.input-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:14px var(--sp-m) calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -3px 12px rgba(0,64,51,.08),0 -8px 20px rgba(0,64,51,.04);z-index:50}
+.input-bar:empty{display:none}
+.bar-inner{display:flex;flex-direction:column;gap:10px;animation:bar-in 250ms ease both}
+.bar-row{display:flex;gap:8px;align-items:center}
+.bar-hint{font-size:12px;font-weight:500;color:var(--light-helper);text-align:center}
+.chips-row{display:flex;gap:8px;flex-wrap:wrap}
+.hint-box{background:var(--gl-bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--gd-bg);line-height:1.6}
+.liq-row{display:flex;justify-content:center;padding-top:2px}
+.liq-btn{font-size:12px;font-weight:500;color:var(--light-content-sec);background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px 0;display:flex;align-items:center;gap:5px}
+.liq-btn:hover{text-decoration:none}
+
+/* === BOTTOM SHEET === */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,32,26,.5);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet-bg.open{opacity:1;pointer-events:all}
+.sheet-panel{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:600px;background:#fff;border-radius:24px 24px 0 0;padding:12px var(--sp-m) calc(24px + env(safe-area-inset-bottom,0px));z-index:201;transition:transform .3s cubic-bezier(.32,0,.67,0)}
+.sheet-panel.open{transform:translateX(-50%) translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--grey-100);margin:0 auto 16px}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sheet-title{font-size:16px;font-weight:600;color:var(--gd-bg)}
+.sheet-close{width:32px;height:32px;border-radius:50%;background:var(--grey-25);display:flex;align-items:center;justify-content:center;color:var(--grey-500);border:none;cursor:pointer;font-size:16px}
+.sheet-body{font-size:14px;line-height:1.7;color:var(--gd-bg);display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+
+/* === ANIMATIONS === */
+@keyframes msg-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dot-pulse{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+@keyframes bar-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes star-bounce{0%{transform:scale(1)}40%{transform:scale(1.45)}70%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* === TABLET 768px+ === */
+@media(min-width:768px){
+  .input-bar{border-radius:20px;bottom:24px;box-shadow:-11px 11px 35px rgba(0,32,26,.2),-45px 44px 63px rgba(0,32,26,.1)}
+}
+
+/* === DESKTOP 1024px+ — DS grid: 1000px fixed centered === */
+@media(min-width:1024px){
+  /* DS standard desktop grid: 12-col 1000px */
+  .chat-header{max-width:1000px;padding:0 var(--sp-xl);border-radius:0 0 0 0}
+  .stepper-wrap{max-width:1000px;padding:16px var(--sp-xl) 8px}
+  .stepper-pill{max-width:720px;margin:0 auto}
+  .stepper-labels{max-width:720px;margin:0 auto}
+  /* DS sjednavač form content: 736px ≈ 720px incl gutters */
+  .chat-area{max-width:1000px;padding:24px var(--sp-xl) 0}
+  .input-bar{max-width:720px;bottom:32px}
+  .sheet-panel{max-width:720px}
+  /* messages: tighter % in wider container */
+  .msg--bot{max-width:68%}
+  .msg--user{max-width:55%}
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header class="chat-header">
+    <div class="chat-header__brand">
+      <div class="chat-header__logo">D</div>
+      <span class="chat-header__title">Hlášení události</span>
+    </div>
+    <span class="chat-header__step-label" id="stepLabel">Krok 1 z 5</span>
+  </header>
+
+  <div class="stepper-wrap">
+    <div class="stepper-pill" id="stepperPill"></div>
+    <div class="stepper-labels" id="stepperLabels"></div>
+  </div>
+
+  <main class="chat-area" id="chatArea"></main>
+  <div class="input-bar" id="inputBar"></div>
+
+</div>
+
+<!-- BOTTOM SHEETS -->
+<div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
+<div class="sheet-panel" id="sheetPanel">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span class="sheet-title" id="sheetTitle">Proč není škoda kryta?</span>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <button class="btn btn--lg btn--primary btn--full" onclick="callLiquidatorFromSheet()">📞 Zavolat likvidátorovi</button>
+</div>
+
+<script>
+// ─── ICONS ───────────────────────────────────────────────────
+const ICO = {
+  avatar: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 012-2h6a2 2 0 012 2v1.662"/></svg>`,
+  checkCircle: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12l3 3 7-7"/></svg>`,
+  check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`,
+  xmark: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+  cloudUp: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V9m0 0l-3 3m3-3l3 3"/><path d="M7.2 18.8A6 6 0 013.4 13a6 6 0 016-6 8 8 0 0115.2 2 6 6 0 010 12H7.2z"/></svg>`,
+  ai: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 3.5L17 8l-3.5 1.5L12 13l-1.5-3.5L7 8l3.5-1.5L12 3z"/><path d="M18.5 14l.75 1.75L21 16.5l-1.75.75L18.5 19l-.75-1.75L16 16.5l1.75-.75z"/></svg>`,
+  plus: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"/></svg>`,
+  clock: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
+  flash: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.09 12.97A1 1 0 005 14.5h6L10 22l9.91-10.97A1 1 0 0019 9.5h-6L13 2z"/></svg>`,
+  star: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  starFull: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  phone: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.72A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-.52a2 2 0 012.11.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>`,
+  email: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>`,
+};
+
+// ─── FAKE DATA ─────────────────────────────────────────────
+const CLIENT = {
+  name: 'Jan Novák', dob: '15. 3. 1982',
+  policy: 'POL-2024-00815', address: 'Mánesova 12, Praha 2, 120 00',
+  email: 'jan.novak@email.cz',
+  products: ['Pojištění domácnosti','Pojištění nemovitosti'],
+};
+
+const BASE_DAMAGES = [
+  {id:1, text:'Poškozená sklokeramická varná deska', covered:true, amount:8500},
+  {id:2, text:'Prasklá dlaždice v kuchyni',          covered:true, amount:4200},
+  {id:3, text:'Poškozená kuchyňská linka',           covered:true, amount:5700},
+  // AI detected, not covered (opotřebení)
+  {id:4, text:'Popraskání nátěru stěny za varnou deskou', covered:false, amount:0},
+];
+
+const DEDUCTIBLE = 2000;
+const FAKE_IBAN = 'CZ65 0800 0000 1920 0014 5399';
+const STEP_LABELS = ['Událost','Fotografie','Škody','Krytí','Závěr'];
+const RATING_TEXT = ['','Velmi špatné','Špatné','Průměrné','Dobré','Výborné!'];
+
+// ─── STATE ─────────────────────────────────────────────────
+const S = {
+  step: 1, damages: JSON.parse(JSON.stringify(BASE_DAMAGES)),
+  nextId: 10, rating: 0, account: FAKE_IBAN,
+  pendingFiles: [], // files selected but not yet analyzed
+};
+
+// ─── STEPPER ───────────────────────────────────────────────
+function buildStepper() {
+  const pill = document.getElementById('stepperPill');
+  const lbls = document.getElementById('stepperLabels');
+  pill.innerHTML = ''; lbls.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const c = document.createElement('div');
+    c.className = 'step-circle'; c.id = `sc-${i}`; c.textContent = i; pill.appendChild(c);
+    if (i < 5) {
+      const b = document.createElement('div'); b.className = 'step-bar'; b.id = `sb-${i}`;
+      const f = document.createElement('div'); f.className = 'step-bar__fill'; f.id = `sbf-${i}`;
+      b.appendChild(f); pill.appendChild(b);
+    }
+    const l = document.createElement('div'); l.className = 'stepper-label'; l.id = `sl-${i}`; l.textContent = STEP_LABELS[i-1]; lbls.appendChild(l);
+  }
+  setStep(1);
+}
+
+function setStep(n) {
+  S.step = n;
+  document.getElementById('stepLabel').textContent = `Krok ${n} z 5`;
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`sc-${i}`).className = 'step-circle' + (i<n?' step-circle--past':i===n?' step-circle--current':' step-circle--future');
+    document.getElementById(`sl-${i}`).className = 'stepper-label' + (i<n?' stepper-label--past':i===n?' stepper-label--current':'');
+    if (i < n) { const f = document.getElementById(`sbf-${i}`); if(f) setTimeout(()=>f.style.width='100%',50); }
+  }
+}
+
+// ─── BOTTOM SHEET ──────────────────────────────────────────
+function openSheet(title, bodyHtml) {
+  document.getElementById('sheetTitle').textContent = title;
+  document.getElementById('sheetBody').innerHTML = bodyHtml;
+  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('sheetPanel').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('sheetBg').classList.remove('open');
+  document.getElementById('sheetPanel').classList.remove('open');
+}
+function showRejectionSheet(itemText) {
+  openSheet('Proč není škoda kryta?', `
+    <p>Pojistka kryje <strong>náhlá a neočekávaná poškození</strong> způsobená živelní událostí — bouřkou, povodní, pádem stromu nebo požárem.</p>
+    <p><strong>„${itemText}"</strong> je typicky způsobeno <strong>postupným opotřebením nebo vadou konstrukce</strong>, která nesouvisí s pojistnou událostí. Takové škody do rozsahu pojistky nespadají.</p>
+    <p>Pokud si myslíte, že škoda vznikla v důsledku pojistné události, zavolejte likvidátorovi — situaci posoudí individuálně.</p>
+  `);
+}
+function callLiquidatorFromSheet() {
+  closeSheet();
+  callLiquidator();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+const chat = document.getElementById('chatArea');
+const bar  = document.getElementById('inputBar');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const spacer = document.createElement('div');
+spacer.id = 'chatSpacer';
+chat.appendChild(spacer);
+
+function syncPadding() {
+  // spacer approach: works in Firefox where padding-bottom is ignored in flex scroll containers
+  const offset = window.innerWidth >= 1024 ? 80 : window.innerWidth >= 768 ? 64 : 48;
+  spacer.style.height = (bar.offsetHeight + offset) + 'px';
+  chat.appendChild(spacer); // keep spacer as last child always
+}
+function updateChatPadding() { setTimeout(syncPadding, 60); }
+function scrollBot() {
+  const doScroll = () => { syncPadding(); chat.scrollTop = chat.scrollHeight; };
+  setTimeout(doScroll, 50);
+  setTimeout(doScroll, 220);
+}
+
+function appendMsg(who, content) {
+  const row = document.createElement('div'); row.className = `msg msg--${who}`;
+  if (who === 'bot') {
+    const av = document.createElement('div'); av.className = 'msg__avatar'; av.innerHTML = ICO.avatar; row.appendChild(av);
+  }
+  const wrap = document.createElement('div');
+  if (content instanceof HTMLElement) { wrap.className = 'msg__card'; wrap.appendChild(content); }
+  else { wrap.className = 'msg__bubble'; wrap.textContent = content; }
+  row.appendChild(wrap); chat.appendChild(row); scrollBot(); return wrap;
+}
+
+async function botMsg(text, delay = 900) {
+  const row = document.createElement('div'); row.className = 'msg msg--bot';
+  const av = document.createElement('div'); av.className = 'msg__avatar'; av.innerHTML = ICO.avatar;
+  const bub = document.createElement('div'); bub.className = 'msg__bubble';
+  bub.innerHTML = `<div class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+  row.appendChild(av); row.appendChild(bub); chat.appendChild(row); scrollBot();
+  await sleep(delay);
+  chat.removeChild(row); return appendMsg('bot', text);
+}
+
+async function botCard(el, delay = 800) {
+  const row = document.createElement('div'); row.className = 'msg msg--bot';
+  const av = document.createElement('div'); av.className = 'msg__avatar'; av.innerHTML = ICO.avatar;
+  const bub = document.createElement('div'); bub.className = 'msg__bubble';
+  bub.innerHTML = `<div class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+  row.appendChild(av); row.appendChild(bub); chat.appendChild(row); scrollBot();
+  await sleep(delay); chat.removeChild(row); return appendMsg('bot', el);
+}
+
+function userMsg(text) { appendMsg('user', text); }
+
+function setBar(html) {
+  bar.innerHTML = `<div class="bar-inner">${html}</div>`;
+  // immediate + delayed scroll so last message is always visible
+  syncPadding(); chat.scrollTop = chat.scrollHeight;
+  setTimeout(() => { syncPadding(); chat.scrollTop = chat.scrollHeight; }, 100);
+}
+function clearBar() { bar.innerHTML = ''; updateChatPadding(); }
+function setupFloat(input) {
+  const upd = () => input.value ? input.classList.add('has-val') : input.classList.remove('has-val');
+  input.addEventListener('input', upd); input.addEventListener('change', upd); upd();
+}
+
+function liqRowHtml() {
+  return `<div class="liq-row"><button class="liq-btn" id="btnLiq">${ICO.phone} Nejste si jistí? Zavolat likvidátorovi</button></div>`;
+}
+function bindLiqBtn() {
+  const btn = document.getElementById('btnLiq');
+  if (btn) btn.addEventListener('click', () => callLiquidator());
+}
+
+async function callLiquidator() {
+  clearBar();
+  userMsg('Zavolat likvidátorovi');
+  await sleep(200);
+  await botMsg('Připojuji vás s likvidátorem… ⏳', 800);
+  await sleep(1500);
+  await botMsg('Likvidátor Petr Novák (+420 800 100 200) vás bude kontaktovat do 5 minut na telefonní číslo ze smlouvy.', 1000);
+  await sleep(300);
+  // restore whatever bar is appropriate for current step
+  restoreStepBar();
+}
+
+function restoreStepBar() {
+  if (S.step === 3) {
+    setBar(`<button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg">${ICO.plus} Přidat další škodu</button><button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg">Potvrdit seznam</button>${liqRowHtml()}`);
+    document.getElementById('btnMoreDmg').addEventListener('click', () => step3_add());
+    document.getElementById('btnConfirmDmg').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
+    bindLiqBtn();
+  }
+}
+
+// ─── STEP 1: UDÁLOST ───────────────────────────────────────
+async function step1() {
+  await sleep(300);
+  await botMsg('Dobrý den! Jsem váš digitální asistent pro hlášení pojistné události.', 500);
+  await botMsg('Potřebuji nejprve ověřit vaši totožnost.', 1000);
+
+  setBar(`
+    <div class="float-wrap"><input class="input-field" type="text" id="inFn" placeholder=" " autocomplete="given-name"><label class="float-label" for="inFn">Jméno</label></div>
+    <div class="float-wrap"><input class="input-field" type="text" id="inLn" placeholder=" " autocomplete="family-name"><label class="float-label" for="inLn">Příjmení</label></div>
+    <div class="float-wrap"><input class="input-field" type="date" id="inDob" placeholder=" "><label class="float-label" for="inDob">Datum narození</label></div>
+    <button class="btn btn--lg btn--primary btn--full" id="btnVerify">Ověřit identitu</button>
+  `);
+
+  ['inFn','inLn'].forEach(id => setupFloat(document.getElementById(id)));
+
+  document.getElementById('btnVerify').addEventListener('click', async () => {
+    const fn = document.getElementById('inFn').value.trim() || 'Jan';
+    const ln = document.getElementById('inLn').value.trim() || 'Novák';
+    const dobRaw = document.getElementById('inDob').value;
+    CLIENT.name = `${fn} ${ln}`;
+    if (dobRaw) {
+      const d = new Date(dobRaw + 'T12:00:00');
+      CLIENT.dob = d.toLocaleDateString('cs-CZ', {day:'numeric', month:'numeric', year:'numeric'});
+    }
+    clearBar(); userMsg(CLIENT.name); await step1_client();
+  });
+}
+
+async function step1_client() {
+  await botMsg('Nalezl jsem vás v systému. Je to správně?', 1300);
+  const card = document.createElement('div');
+  card.className = 'client-card';
+  card.innerHTML = `
+    <div class="client-card__name">${CLIENT.name}</div>
+    <div class="client-card__row">Datum narození: ${CLIENT.dob}</div>
+    <div class="client-card__row">Smlouva: ${CLIENT.policy}</div>
+    <div class="client-card__row">Adresa: ${CLIENT.address}</div>
+    <div class="client-card__tags">${CLIENT.products.map(p=>`<span class="tag tag--gdef">${p}</span>`).join('')}</div>
+  `;
+  await botCard(card, 200);
+
+  setBar(`<div class="chips-row"><button class="btn btn--lg btn--primary" style="flex:1" id="btnYes">Ano, pokračovat</button><button class="btn btn--lg btn--secondary" id="btnNo">Nejsem to já</button></div>`);
+
+  document.getElementById('btnYes').addEventListener('click', async () => { clearBar(); userMsg('Ano, pokračovat'); await step1_describe(); });
+  document.getElementById('btnNo').addEventListener('click', async () => { clearBar(); userMsg('Nejsem to já'); await botMsg('Obraťte se prosím na zákaznickou linku: 800 100 200.', 800); });
+}
+
+async function step1_describe() {
+  await botMsg('Výborně! Popište prosím co se stalo — zahrňte co bylo poškozeno, jak k tomu došlo a odhadovaný rozsah.', 1200);
+
+  setBar(`
+    <textarea class="input-field" id="inDesc" placeholder="Popište co se přihodilo..." rows="2"></textarea>
+    <div class="hint-box">💡 Příklad: „Při vaření přetekl kastrol a zalil sklokeramickou desku, která praskla. Zároveň se poškodil povrch kuchyňské linky."</div>
+    <button class="btn btn--lg btn--primary btn--full" id="btnSendDesc">Odeslat popis</button>
+  `);
+
+  const ta = document.getElementById('inDesc');
+  ta.addEventListener('input', () => { ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,120)+'px'; });
+
+  document.getElementById('btnSendDesc').addEventListener('click', async () => {
+    const desc = ta.value.trim() || 'Při vaření se poškodila sklokeramická deska a kuchyňská linka.';
+    clearBar(); userMsg(desc); await step1_datetime();
+  });
+}
+
+async function step1_datetime() {
+  await botMsg('Kdy přesně k události došlo?', 900);
+
+  setBar(`
+    <div class="bar-row">
+      <div class="float-wrap" style="flex:2"><input class="input-field" type="date" id="inDate" placeholder=" "><label class="float-label" for="inDate">Datum</label></div>
+      <div class="float-wrap" style="flex:1"><input class="input-field" type="text" id="inTime" placeholder="09:00" maxlength="5" inputmode="numeric" autocomplete="off"><label class="float-label float-label--always" for="inTime">Čas</label></div>
+    </div>
+    <button class="btn btn--lg btn--primary btn--full" id="btnDateTime">Potvrdit</button>
+  `);
+
+  // auto-colon for time text input
+  const timeEl = document.getElementById('inTime');
+  timeEl.addEventListener('input', () => {
+    let v = timeEl.value.replace(/\D/g,'');
+    if (v.length > 2) v = v.slice(0,2) + ':' + v.slice(2,4);
+    timeEl.value = v;
+  });
+  setupFloat(timeEl);
+
+  document.getElementById('btnDateTime').addEventListener('click', async () => {
+    const d = document.getElementById('inDate').value;
+    const t = timeEl.value || '09:00';
+    const disp = (d ? new Date(d+'T12:00:00').toLocaleDateString('cs-CZ') : '15. 5. 2025') + ' v ' + t;
+    clearBar(); userMsg(disp); await step1_address();
+  });
+}
+
+async function step1_address() {
+  await botMsg('Zadejte prosím adresu místa události.', 900);
+
+  setBar(`
+    <div class="float-wrap"><input class="input-field" type="text" id="inAddr" placeholder=" " autocomplete="street-address"><label class="float-label" for="inAddr">Adresa události</label></div>
+    <button class="btn btn--lg btn--primary btn--full" id="btnAddrSend">Potvrdit adresu</button>
+  `);
+  setupFloat(document.getElementById('inAddr'));
+  document.getElementById('btnAddrSend').addEventListener('click', async () => {
+    const a = document.getElementById('inAddr').value.trim();
+    if (!a) { document.getElementById('inAddr').focus(); return; }
+    clearBar(); userMsg(a); await goStep2();
+  });
+}
+
+// ─── STEP 2: FOTOGRAFIE ────────────────────────────────────
+async function goStep2() {
+  setStep(2);
+  await botMsg('Popis byl zaznamenán. Přiložte prosím fotografie nebo video z místa události — AI je automaticky vyhodnotí.', 1400);
+
+  const uploadEl = document.createElement('div');
+  uploadEl.id = 'uploadCard';
+  uploadEl.className = 'upload-card';
+  uploadEl.innerHTML = `
+    <div style="display:flex;justify-content:center;color:var(--gd-bg);margin-bottom:10px">${ICO.cloudUp}</div>
+    <div class="upload-card__title">Přetáhněte soubory sem</div>
+    <div class="upload-card__sub">nebo</div>
+    <button class="btn btn--md btn--secondary" id="btnPickFiles" type="button" style="margin:0 auto;display:flex">Vybrat soubory</button>
+    <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none">
+    <div class="upload-thumbs" id="upThumbs"></div>
+    <div id="upAddMore" style="margin-top:10px"></div>
+    <div id="upOverlay" style="display:none" class="upload-overlay"><div style="color:var(--gd-bg);animation:pulse 1.2s ease infinite">${ICO.ai}</div><div class="upload-overlay__text">Analyzuji nahrané soubory…</div></div>
+    <div id="upProgress" style="display:none;margin-top:10px;background:var(--grey-100);border-radius:100px;height:5px;overflow:hidden"><div id="upBar" style="height:100%;width:0%;background:var(--gdef-bg);border-radius:100px;transition:width 2.5s ease-out"></div></div>
+  `;
+
+  await botCard(uploadEl, 400);
+
+  document.getElementById('btnPickFiles').addEventListener('click', () => document.getElementById('fileInput').click());
+  document.getElementById('fileInput').addEventListener('change', e => addFiles(e.target.files));
+
+  const card = document.getElementById('uploadCard');
+  card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => { e.preventDefault(); card.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
+
+  setBar(`
+    <div class="bar-hint">Nahrajte fotografii pro přesnější posouzení</div>
+    <button class="btn btn--md btn--tertiary btn--full" id="btnSkip">Přeskočit nahrávání</button>
+  `);
+  document.getElementById('btnSkip').addEventListener('click', async () => { clearBar(); userMsg('Přeskočit nahrávání'); await step2_result(0); });
+}
+
+async function addFiles(files) {
+  if (!files || files.length === 0) return;
+  const arr = Array.from(files).slice(0, 6 - S.pendingFiles.length);
+  S.pendingFiles.push(...arr);
+
+  const thumbsEl = document.getElementById('upThumbs');
+
+  for (const f of arr) {
+    const thumb = document.createElement('div');
+    thumb.className = 'upload-thumb';
+    if (f.type.startsWith('image/')) {
+      await new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => { thumb.innerHTML = `<img src="${e.target.result}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`; res(); };
+        r.readAsDataURL(f);
+      });
+    } else {
+      thumb.innerHTML = `<span style="font-size:11px;font-weight:500;text-align:center">${ICO.phone}<br>video</span>`;
+    }
+    thumbsEl.appendChild(thumb);
+  }
+
+  // hide original pick button, show inline "add more" in card
+  const pickBtn = document.getElementById('btnPickFiles');
+  if (pickBtn) pickBtn.style.display = 'none';
+
+  const addMoreEl = document.getElementById('upAddMore');
+  if (addMoreEl) {
+    const n = S.pendingFiles.length;
+    const label = `${n} soubor${n > 1 ? (n < 5 ? 'y' : 'ů') : ''}`;
+    addMoreEl.innerHTML = `<button class="btn btn--md btn--secondary" id="btnAddMore" type="button" style="margin:0 auto;display:flex">${ICO.plus} Přidat další</button>`;
+    document.getElementById('btnAddMore').addEventListener('click', () => {
+      const fi = document.getElementById('fileInput');
+      if (fi) fi.click();
+    });
+  }
+
+  setBar(`
+    <div class="bar-hint">Vybráno: ${S.pendingFiles.length} soubor${S.pendingFiles.length > 1 ? (S.pendingFiles.length < 5 ? 'y' : 'ů') : ''}</div>
+    <button class="btn btn--lg btn--primary btn--full" id="btnAnalyze">Analyzovat</button>
+  `);
+  document.getElementById('btnAnalyze').addEventListener('click', async () => {
+    clearBar();
+    await runAnalysis();
+  });
+}
+
+async function runAnalysis() {
+  const count = S.pendingFiles.length;
+  const ov = document.getElementById('upOverlay');
+  const prog = document.getElementById('upProgress');
+  const bar2 = document.getElementById('upBar');
+  if (ov) ov.style.display = 'flex';
+  if (prog) prog.style.display = 'block';
+  await sleep(80);
+  if (bar2) bar2.style.width = '100%';
+  await sleep(2900);
+  if (ov) ov.style.display = 'none';
+  await step2_result(count);
+}
+
+async function step2_result(count) {
+  userMsg(count > 0 ? `${count} soubor${count>1?(count<5?'y':'ů'):''}` : 'Přeskočeno');
+  await botMsg(count > 0 ? 'Soubory zpracovány. AI identifikovala následující škody:' : 'Pokračuji bez fotodokumentace. Na základě vašeho popisu jsem identifikoval tyto škody:', 2000);
+
+  const ac = document.createElement('div');
+  ac.className = 'ai-card';
+  // only show the covered items in AI result (uncovered ones need user context)
+  const detectedDmgs = S.damages.filter(d => d.covered);
+  ac.innerHTML = `
+    <div class="ai-card__header">${ICO.ai} <span>AI analýza dokončena</span></div>
+    <div class="ai-card__body">${detectedDmgs.map(d=>`<div class="ai-dmg-row">${ICO.check}<span>${d.text}</span></div>`).join('')}</div>
+  `;
+  await botCard(ac, 300);
+  await sleep(300);
+  await botMsg('Stalo se tam ještě něco dalšího?', 700);
+
+  setBar(`
+    <div class="chips-row">
+      <button class="btn btn--lg btn--secondary" id="btnAddDmg2">Přidat škodu</button>
+      <button class="btn btn--lg btn--primary" style="flex:1" id="btnNoDmg2">Ne, to je vše</button>
+    </div>
+  `);
+
+  document.getElementById('btnAddDmg2').addEventListener('click', () => step2_addDamage());
+  document.getElementById('btnNoDmg2').addEventListener('click', async () => { clearBar(); userMsg('Ne, to je vše'); await goStep3(); });
+}
+
+function step2_addDamage() {
+  setBar(`
+    <div class="float-wrap"><input class="input-field" type="text" id="inExtraDmg" placeholder=" "><label class="float-label" for="inExtraDmg">Popis škody</label></div>
+    <div class="bar-row">
+      <button class="btn btn--lg btn--primary" style="flex:1" id="btnSaveDmg">Přidat</button>
+      <button class="btn btn--lg btn--secondary" id="btnDoneDmg">Dokončit</button>
+    </div>
+  `);
+  setupFloat(document.getElementById('inExtraDmg'));
+  document.getElementById('btnSaveDmg').addEventListener('click', async () => {
+    const txt = document.getElementById('inExtraDmg').value.trim();
+    if (!txt) return;
+    S.damages.push({id:S.nextId++, text:txt, covered:false, amount:0, added:true});
+    userMsg(txt);
+    document.getElementById('inExtraDmg').value='';
+    document.getElementById('inExtraDmg').classList.remove('has-val');
+    await botMsg(`Zaznamenáno: „${txt}"`, 500);
+    step2_addDamage();
+  });
+  document.getElementById('btnDoneDmg').addEventListener('click', async () => { clearBar(); userMsg('Hotovo'); await goStep3(); });
+}
+
+// ─── STEP 3: ŠKODY ─────────────────────────────────────────
+async function goStep3() {
+  setStep(3);
+  await botMsg('Přehled všech zaznamenaných škod. Zkontrolujte a případně upravte.', 1100);
+
+  const card = document.createElement('div');
+  const list = document.createElement('div');
+  list.className = 'damage-list'; list.id = 'dmgList';
+  renderDmgItems(list);
+  card.appendChild(list);
+  await botCard(card, 400);
+
+  setBar(`
+    <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg">${ICO.plus} Přidat další škodu</button>
+    <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg">Potvrdit seznam</button>
+    ${liqRowHtml()}
+  `);
+  document.getElementById('btnMoreDmg').addEventListener('click', () => step3_add());
+  document.getElementById('btnConfirmDmg').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
+  bindLiqBtn();
+}
+
+function renderDmgItems(list) {
+  list.innerHTML = '';
+  S.damages.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'dmg-item'; row.id = `dr-${d.id}`;
+    row.innerHTML = `
+      <span class="tag ${d.added ? 'tag--grey' : 'tag--gdef'}">${d.added ? 'Přidáno' : 'AI'}</span>
+      <span class="dmg-item__text">${d.text}</span>
+      <button class="dmg-item__del" data-id="${d.id}">${ICO.xmark}</button>
+    `;
+    list.appendChild(row);
+  });
+  list.onclick = e => {
+    const btn = e.target.closest('.dmg-item__del');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id);
+    S.damages = S.damages.filter(d => d.id !== id);
+    document.getElementById(`dr-${id}`)?.remove();
+  };
+}
+
+function step3_add() {
+  setBar(`
+    <div class="float-wrap"><input class="input-field" type="text" id="inAdd3" placeholder=" "><label class="float-label" for="inAdd3">Popis škody</label></div>
+    <div class="bar-row">
+      <button class="btn btn--lg btn--primary" style="flex:1" id="btnSubmit3">Přidat</button>
+      <button class="btn btn--lg btn--secondary" id="btnCancel3">Zpět</button>
+    </div>
+    ${liqRowHtml()}
+  `);
+  setupFloat(document.getElementById('inAdd3'));
+  document.getElementById('btnSubmit3').addEventListener('click', () => {
+    const txt = document.getElementById('inAdd3').value.trim();
+    if (!txt) return;
+    const d = {id:S.nextId++, text:txt, covered:false, amount:0, added:true};
+    S.damages.push(d);
+    const list = document.getElementById('dmgList');
+    if (list) renderDmgItems(list);
+    setBar(`
+      <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg2">${ICO.plus} Přidat další škodu</button>
+      <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg2">Potvrdit seznam</button>
+      ${liqRowHtml()}
+    `);
+    document.getElementById('btnMoreDmg2').addEventListener('click', () => step3_add());
+    document.getElementById('btnConfirmDmg2').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
+    bindLiqBtn();
+  });
+  document.getElementById('btnCancel3').addEventListener('click', () => {
+    setBar(`
+      <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg3">${ICO.plus} Přidat další škodu</button>
+      <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg3">Potvrdit seznam</button>
+      ${liqRowHtml()}
+    `);
+    document.getElementById('btnMoreDmg3').addEventListener('click', () => step3_add());
+    document.getElementById('btnConfirmDmg3').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
+    bindLiqBtn();
+  });
+  bindLiqBtn();
+}
+
+// ─── STEP 4: KRYTÍ ─────────────────────────────────────────
+async function goStep4() {
+  setStep(4);
+  await botMsg('Prověřil jsem vaše pojistné podmínky. Zde je přehled krytí:', 1400);
+
+  const covCard = document.createElement('div');
+  const rows = S.damages.map(d => {
+    const why = !d.covered ? `<button class="why-btn" onclick="showRejectionSheet('${d.text.replace(/'/g,"\\'")}')">Proč?</button>` : '';
+    return `<div class="cov-row">
+      <span class="cov-row__text">${d.text}</span>
+      <div class="cov-row__actions">
+        <span class="tag ${d.covered ? 'tag--success' : 'tag--error'}">${d.covered ? '✓ Kryto' : '✕ Nekryto'}</span>
+        ${why}
+      </div>
+    </div>`;
+  }).join('');
+  covCard.innerHTML = `<div class="coverage-list">${rows}</div>`;
+  await botCard(covCard, 300);
+
+  const rejected = S.damages.filter(d => !d.covered);
+
+  if (rejected.length > 0) {
+    await sleep(300);
+    await botMsg('Chcete podat námitku k zamítnutým položkám?', 900);
+
+    setBar(`
+      <div class="chips-row">
+        <button class="btn btn--lg btn--secondary" id="btnObjection">Podat námitku</button>
+        <button class="btn btn--lg btn--primary" style="flex:1" id="btnToPayout">Pokračovat na výplatu</button>
+      </div>
+      ${liqRowHtml()}
+    `);
+    document.getElementById('btnObjection').addEventListener('click', async () => {
+      clearBar(); userMsg('Podat námitku');
+      await botMsg('Námitka zaznamenána. Oddělení posouzení škod vás kontaktuje do 3 pracovních dnů. Mezitím zpracujeme schválené položky.', 1100);
+      await sleep(300); await goStep5();
+    });
+    document.getElementById('btnToPayout').addEventListener('click', async () => { clearBar(); userMsg('Pokračovat na výplatu'); await goStep5(); });
+    bindLiqBtn();
+  } else {
+    setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnToPayout2">Pokračovat na výplatu</button>${liqRowHtml()}`);
+    document.getElementById('btnToPayout2').addEventListener('click', async () => { clearBar(); userMsg('Pokračovat na výplatu'); await goStep5(); });
+    bindLiqBtn();
+  }
+}
+
+// ─── STEP 5: ZÁVĚR ─────────────────────────────────────────
+async function goStep5() {
+  setStep(5);
+  await botMsg('Vaše žádost je rovnou zlikvidována – není třeba čekat. Zkontrolujte prosím výplatní účet:', 1300);
+
+  const covered = S.damages.filter(d => d.covered);
+  const gross = covered.reduce((s,d) => s+d.amount, 0);
+  const net = gross - DEDUCTIBLE;
+
+  const fc = document.createElement('div');
+  fc.className = 'fin-card';
+  fc.innerHTML = `
+    <div class="fin-card__header">
+      <div><div class="fin-card__label">Celkové plnění</div></div>
+      <div style="text-align:right">
+        <div class="fin-card__gross">${gross.toLocaleString('cs-CZ')} Kč</div>
+        <div class="fin-card__period">hrubá částka</div>
+      </div>
+    </div>
+    <div class="fin-card__body">
+      ${covered.map(d=>`<div class="fin-row"><span class="fin-row__label">${d.text}</span><span class="fin-row__amount">${d.amount.toLocaleString('cs-CZ')} Kč</span></div>`).join('')}
+      <div class="fin-row fin-row--deductible"><span class="fin-row__label">Spoluúčast</span><span class="fin-row__amount">− ${DEDUCTIBLE.toLocaleString('cs-CZ')} Kč</span></div>
+      <div class="fin-row fin-row--total"><span class="fin-row__label">K výplatě</span><span class="fin-row__amount">${net.toLocaleString('cs-CZ')} Kč</span></div>
+    </div>
+    <div class="fin-account" id="accountSection">
+      <span class="fin-account__num" id="accountDisplay">${ICO.email}&nbsp; Bankovní účet: ${S.account}</span>
+      <button class="fin-account__change" id="btnChangeAccount">Změnit</button>
+    </div>
+    <div class="fin-card__footer">${ICO.flash} Výplata ihned — okamžité platby povoleny</div>
+  `;
+  await botCard(fc, 400);
+
+  // wire account change
+  document.getElementById('btnChangeAccount').addEventListener('click', () => step5_accountEdit());
+
+  setBar(`
+    <button class="btn btn--lg btn--primary btn--full" id="btnConfirmPay">Potvrdit a odeslat žádost</button>
+    ${liqRowHtml()}
+  `);
+  document.getElementById('btnConfirmPay').addEventListener('click', async () => { clearBar(); userMsg('Potvrdit a odeslat žádost'); await step5_success(); });
+  bindLiqBtn();
+}
+
+function step5_accountEdit() {
+  const section = document.getElementById('accountSection');
+  section.innerHTML = `
+    <div class="float-wrap" style="flex:1">
+      <input class="input-field" type="text" id="inAccount" placeholder=" " value="${S.account}" style="height:44px;padding:16px 12px 4px;font-size:13px;border-radius:10px">
+      <label class="float-label" for="inAccount" style="left:13px">Číslo bankovního účtu</label>
+    </div>
+    <button class="btn btn--sm btn--primary" id="btnSaveAccount" style="flex-shrink:0">Uložit</button>
+  `;
+  setupFloat(document.getElementById('inAccount'));
+  document.getElementById('btnSaveAccount').addEventListener('click', () => {
+    S.account = document.getElementById('inAccount').value.trim() || S.account;
+    section.innerHTML = `
+      <span class="fin-account__num">${ICO.email}&nbsp; Bankovní účet: ${S.account}</span>
+      <button class="fin-account__change" id="btnChangeAccount2">Změnit</button>
+    `;
+    document.getElementById('btnChangeAccount2').addEventListener('click', () => step5_accountEdit());
+  });
+}
+
+async function step5_success() {
+  const covered = S.damages.filter(d => d.covered);
+  const net = covered.reduce((s,d)=>s+d.amount,0) - DEDUCTIBLE;
+  await botMsg(`Hotovo! Žádost je zlikvidována. ${net.toLocaleString('cs-CZ')} Kč směřuje na účet ${S.account}.`, 1000);
+  await sleep(800);
+
+  const ref = `2025-${String(Math.floor(1000+Math.random()*8999))}-${String(Math.floor(100+Math.random()*899))}`;
+  const sc = document.createElement('div');
+  sc.className = 'success-card';
+  sc.innerHTML = `
+    <div class="success-icon">${ICO.checkCircle}</div>
+    <div class="success-title">Hlášení zlikvidováno!</div>
+    <div class="success-ref">Číslo události: ${ref}</div>
+    <div class="success-note">
+      Pokud máte na účtu povolené okamžité platby, peníze jsou již k dispozici.<br><br>
+      Přehled jsme zaslali na <strong>${CLIENT.email}</strong>.
+    </div>
+  `;
+  await botCard(sc, 200);
+
+  await sleep(500);
+  await botMsg('Jak hodnotíte průběh nahlašování?', 700);
+
+  const ratingEl = document.createElement('div');
+  ratingEl.innerHTML = `
+    <div class="star-rating" id="starRow">${[1,2,3,4,5].map(i=>`<button class="star-btn" id="s${i}" data-v="${i}">${ICO.star}</button>`).join('')}</div>
+    <div class="rating-label" id="ratingLbl"></div>
+  `;
+  await botCard(ratingEl, 400);
+
+  [1,2,3,4,5].forEach(i => {
+    const btn = document.getElementById(`s${i}`);
+    btn.addEventListener('mouseenter', () => { if (!S.rating) highlightStars(i); });
+    btn.addEventListener('mouseleave', () => { if (!S.rating) highlightStars(0); });
+    btn.addEventListener('click', async () => {
+      if (S.rating) return;
+      S.rating = i;
+      highlightStars(i);
+      [1,2,3,4,5].forEach(j => { if(j<=i){ const b=document.getElementById(`s${j}`); b.classList.add('bounce'); setTimeout(()=>b.classList.remove('bounce'),400+j*50); } });
+      document.getElementById('ratingLbl').textContent = RATING_TEXT[i];
+      await sleep(600);
+      setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnSendRating">Odeslat hodnocení</button>`);
+      document.getElementById('btnSendRating').addEventListener('click', async () => {
+        clearBar();
+        userMsg('★'.repeat(i)+'☆'.repeat(5-i));
+        await sleep(200);
+        await botMsg('Děkujeme za hodnocení! Přejeme příjemný zbytek dne.', 800);
+      });
+    });
+  });
+}
+
+function highlightStars(n) {
+  [1,2,3,4,5].forEach(i => {
+    const btn = document.getElementById(`s${i}`); if (!btn) return;
+    if (i<=n){ btn.innerHTML=ICO.starFull; btn.classList.add('lit'); }
+    else { btn.innerHTML=ICO.star; btn.classList.remove('lit'); }
+  });
+}
+
+// ─── INIT ──────────────────────────────────────────────────
+buildStepper();
+step1();
+
+// ResizeObserver: whenever input bar height changes, fix padding + scroll
+new ResizeObserver(() => {
+  syncPadding();
+  chat.scrollTop = chat.scrollHeight;
+}).observe(bar);
+</script>
+</body>
+</html>
