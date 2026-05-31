@@ -418,9 +418,9 @@ async function callLiquidator() {
   clearBar();
   userMsg('Zavolat likvidátorovi');
   await sleep(200);
-  await botMsg('Připojuji vás s likvidátorem… ⏳', 800);
+  await botMsg('Spojuji…', 800);
   await sleep(1500);
-  await botMsg('Likvidátor Petr Novák (+420 800 100 200) vás bude kontaktovat do 5 minut na telefonní číslo ze smlouvy.', 1000);
+  await botMsg('Kolega z likvidace (+420 800 100 200) vás bude kontaktovat do 5 minut na telefonní číslo ze smlouvy.', 1000);
   await sleep(300);
   // restore whatever bar is appropriate for current step
   restoreStepBar();
@@ -439,8 +439,8 @@ function restoreStepBar() {
 async function step1() {
   updateProgress(0);
   await sleep(300);
-  await botMsg('Dobrý den! Jsem váš digitální asistent pro hlášení pojistné události.', 500);
-  await botMsg('Potřebuji nejprve ověřit vaši totožnost.', 1000);
+  await botMsg('Dobrý den! Jsem váš asistent Direct pro hlášení pojistné události.', 500);
+  await botMsg('Potřebujeme nejprve ověřit vaši totožnost.', 1000);
 
   setBar(`
     <div class="float-wrap"><input class="input-field" type="text" id="inFn" placeholder=" " autocomplete="given-name"><label class="float-label" for="inFn">Jméno</label></div>
@@ -465,7 +465,7 @@ async function step1() {
 }
 
 async function step1_client() {
-  await botMsg('Nalezl jsem vás v systému. Je to správně?', 1300);
+  await botMsg('Nalezli jsme vás v systému. Je to správně?', 1300);
   const card = document.createElement('div');
   card.className = 'client-card';
   card.innerHTML = `
@@ -484,7 +484,7 @@ async function step1_client() {
 }
 
 async function step1_describe() {
-  await botMsg('Výborně! Popište prosím co se stalo — zahrňte co bylo poškozeno, jak k tomu došlo a odhadovaný rozsah.', 1200);
+  await botMsg('Popište prosím, co se stalo – uveďte, co bylo poškozeno, jak k tomu došlo a odhadovaný rozsah škody.', 1200);
 
   setBar(`
     <textarea class="input-field" id="inDesc" placeholder="Popište co se přihodilo..." rows="2"></textarea>
@@ -555,7 +555,7 @@ async function step1_address() {
 // ─── STEP 2: FOTOGRAFIE ────────────────────────────────────
 async function goStep2() {
   setStep(2);
-  await botMsg('Popis byl zaznamenán. Přiložte prosím fotografie nebo video z místa události — AI je automaticky vyhodnotí.', 1400);
+  await botMsg('Popis jsme zaznamenali. Přiložte prosím fotografie nebo video z místa události — AI je automaticky vyhodnotí.', 1400);
 
   const uploadEl = document.createElement('div');
   uploadEl.id = 'uploadCard';
@@ -652,7 +652,7 @@ async function runAnalysis() {
 
 async function step2_result(count) {
   userMsg(count > 0 ? `${count} soubor${count>1?(count<5?'y':'ů'):''}` : 'Přeskočeno');
-  await botMsg(count > 0 ? 'Soubory zpracovány.' : 'Pokračuji bez fotodokumentace.', 1200);
+  await botMsg(count > 0 ? 'Soubory jsme zpracovali.' : 'Pokračujeme bez fotodokumentace.', 1200);
   await goStep3();
 }
 
@@ -660,7 +660,7 @@ async function step2_result(count) {
 // ─── STEP 3: ŠKODY ─────────────────────────────────────────
 async function goStep3() { setStep(3);
   setStep(3);
-  await botMsg('Přehled všech zaznamenaných škod. Zkontrolujte a případně upravte.', 1100);
+  await botMsg('Tady jsou všechny škody, které jsme zaznamenali. Zkontrolujte je a případně upravte.', 1100);
 
   const card = document.createElement('div');
   const list = document.createElement('div');
@@ -742,7 +742,7 @@ function step3_add() {
 // ─── STEP 4: KRYTÍ ─────────────────────────────────────────
 async function goStep4() {
   setStep(4);
-  await botMsg('Prověřil jsem vaše pojistné podmínky. Zde je přehled krytí:', 1400);
+  await botMsg('Prověřili jsme vaše pojistné podmínky. Tady je přehled krytí:', 1400);
 
   const covCard = document.createElement('div');
   const rows = S.damages.map(d => {
@@ -773,7 +773,7 @@ async function goStep4() {
     `);
     document.getElementById('btnObjection').addEventListener('click', async () => {
       clearBar(); userMsg('Podat námitku');
-      await botMsg('Námitka zaznamenána. Oddělení posouzení škod vás kontaktuje do 3 pracovních dnů. Mezitím zpracujeme schválené položky.', 1100);
+      await botMsg('Námitka už je u nás. Tým likvidace vás bude kontaktovat do 3 pracovních dnů. Mezitím vyřešíme schválené položky.', 1100);
       await sleep(300); await goStep5();
     });
     document.getElementById('btnToPayout').addEventListener('click', async () => { clearBar(); userMsg('Pokračovat na výplatu'); await goStep5(); });
@@ -788,7 +788,7 @@ async function goStep4() {
 // ─── STEP 5: ZÁVĚR ─────────────────────────────────────────
 async function goStep5() {
   setStep(5);
-  await botMsg('Vaše žádost je rovnou zlikvidována – není třeba čekat. Zkontrolujte prosím výplatní účet:', 1300);
+  await botMsg('Vaši žádost rovnou likvidujeme – není třeba čekat. Zkontrolujte prosím výplatní účet:', 1300);
 
   const covered = S.damages.filter(d => d.covered);
   const gross = covered.reduce((s,d) => s+d.amount, 0);
@@ -813,7 +813,7 @@ async function goStep5() {
       <span class="fin-account__num" id="accountDisplay">${ICO.email}&nbsp; Bankovní účet: ${S.account}</span>
       <button class="fin-account__change" id="btnChangeAccount">Změnit</button>
     </div>
-    <div class="fin-card__footer">${ICO.flash} Výplata ihned — okamžité platby povoleny</div>
+    <div class="fin-card__footer">${ICO.flash} Výplata ihned – peníze na účtu během pár minut.</div>
   `;
   await botCard(fc, 400);
 
@@ -851,7 +851,7 @@ function step5_accountEdit() {
 async function step5_success() { updateProgress(100); progressCount = PROGRESS_TOTAL;
   const covered = S.damages.filter(d => d.covered);
   const net = covered.reduce((s,d)=>s+d.amount,0) - DEDUCTIBLE;
-  await botMsg(`Hotovo! Žádost je zlikvidována. ${net.toLocaleString('cs-CZ')} Kč směřuje na účet ${S.account}.`, 1000);
+  await botMsg(`Hotovo! Škoda je vyřešená. Na váš účet ${S.account} posíláme ${net.toLocaleString('cs-CZ')} Kč.`, 1000);
   await sleep(800);
 
   const ref = `2025-${String(Math.floor(1000+Math.random()*8999))}-${String(Math.floor(100+Math.random()*899))}`;
@@ -859,11 +859,11 @@ async function step5_success() { updateProgress(100); progressCount = PROGRESS_T
   sc.className = 'success-card';
   sc.innerHTML = `
     <div class="success-icon">${ICO.checkCircle}</div>
-    <div class="success-title">Hlášení zlikvidováno!</div>
+    <div class="success-title">Škoda je vyřešená!</div>
     <div class="success-ref">Číslo události: ${ref}</div>
     <div class="success-note">
-      Pokud máte na účtu povolené okamžité platby, peníze jsou již k dispozici.<br><br>
-      Přehled jsme zaslali na <strong>${CLIENT.email}</strong>.
+      Peníze očekávejte během pár minut.<br><br>
+      Přehled řešení škody jsme poslali na <strong>${CLIENT.email}</strong>.
     </div>
   `;
   await botCard(sc, 200);
