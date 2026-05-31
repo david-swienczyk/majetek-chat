@@ -40,6 +40,7 @@ img{display:block;max-width:100%}
 
 /* === HEADER === */
 .chat-header{width:100%;max-width:600px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-m);height:56px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--grey-50)}
+.progress-chip{font-size:13px;font-weight:600;color:var(--gd-bg);background:var(--gl-bg);border-radius:20px;padding:4px 12px;letter-spacing:.2px;transition:opacity .3s}
 .chat-header__brand{display:flex;align-items:center;gap:var(--sp-xxs)}
 .chat-header__logo{width:32px;height:32px;background:var(--gd-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#C4DE00;font-size:13px;font-weight:700;letter-spacing:.5px}
 .chat-header__title{font-size:14px;font-weight:600;color:var(--gd-bg);letter-spacing:.7px}
@@ -234,6 +235,7 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
     <div class="chat-header__brand">
       <div class="chat-header__logo">D</div>
       <span class="chat-header__title">Hlášení události</span>
+      <span class="progress-chip" id="progressChip">0 %</span>
     </div>
   </header>
 
@@ -294,6 +296,9 @@ const FAKE_IBAN = '1234567890/3030';
 const RATING_TEXT = ['','Velmi špatné','Špatné','Průměrné','Dobré','Výborné!'];
 
 // ─── STATE ─────────────────────────────────────────────────
+const PROGRESS_TOTAL = 10; // ~10 user actions in full flow
+let progressCount = 0;
+
 const S = {
   step: 1, damages: JSON.parse(JSON.stringify(BASE_DAMAGES)),
   nextId: 10, rating: 0, account: FAKE_IBAN,
@@ -301,6 +306,10 @@ const S = {
 };
 
 function setStep(n) { S.step = n; }
+function updateProgress(pct) {
+  const chip = document.getElementById('progressChip');
+  if (chip) chip.textContent = pct + ' %';
+}
 
 // ─── BOTTOM SHEET ──────────────────────────────────────────
 function openSheet(title, bodyHtml) {
@@ -379,7 +388,11 @@ async function botCard(el, delay = 800) {
   await sleep(delay); chat.removeChild(row); return appendMsg('bot', el);
 }
 
-function userMsg(text) { appendMsg('user', text); }
+function userMsg(text) {
+  progressCount = Math.min(progressCount + 1, PROGRESS_TOTAL);
+  updateProgress(Math.round(progressCount / PROGRESS_TOTAL * 100));
+  appendMsg('user', text);
+}
 
 function setBar(html) {
   bar.innerHTML = `<div class="bar-inner">${html}</div>`;
@@ -424,6 +437,7 @@ function restoreStepBar() {
 
 // ─── STEP 1: UDÁLOST ───────────────────────────────────────
 async function step1() {
+  updateProgress(0);
   await sleep(300);
   await botMsg('Dobrý den! Jsem váš digitální asistent pro hlášení pojistné události.', 500);
   await botMsg('Potřebuji nejprve ověřit vaši totožnost.', 1000);
@@ -432,31 +446,20 @@ async function step1() {
     <div class="float-wrap"><input class="input-field" type="text" id="inFn" placeholder=" " autocomplete="given-name"><label class="float-label" for="inFn">Jméno</label></div>
     <div class="float-wrap"><input class="input-field" type="text" id="inLn" placeholder=" " autocomplete="family-name"><label class="float-label" for="inLn">Příjmení</label></div>
     <div class="bar-row">
-      <div class="float-wrap" style="flex:0 0 calc(50% - 4px)"><input class="input-field" type="text" id="inDob" placeholder="15.03.1987" maxlength="10" inputmode="numeric" autocomplete="bday"><label class="float-label float-label--always" for="inDob">Datum narození</label></div>
+      <div class="float-wrap" style="flex:0 0 calc(50% - 4px)"><input class="input-field" type="text" id="inDob" placeholder=" " autocomplete="bday"><label class="float-label" for="inDob">Datum narození</label></div>
     </div>
     <button class="btn btn--lg btn--primary btn--full" id="btnVerify">Ověřit identitu</button>
   `);
 
   ['inFn','inLn'].forEach(id => setupFloat(document.getElementById(id)));
-
-  // auto-dot formatter for DD.MM.YYYY
-  const dobEl = document.getElementById('inDob');
-  dobEl.addEventListener('input', () => {
-    let v = dobEl.value.replace(/\D/g,'');
-    if (v.length > 2) v = v.slice(0,2) + '.' + v.slice(2);
-    if (v.length > 5) v = v.slice(0,5) + '.' + v.slice(5,9);
-    dobEl.value = v;
-  });
+  setupFloat(document.getElementById('inDob'));
 
   document.getElementById('btnVerify').addEventListener('click', async () => {
     const fn = document.getElementById('inFn').value.trim() || 'Jan';
     const ln = document.getElementById('inLn').value.trim() || 'Novák';
-    const dobRaw = dobEl.value.trim();
+    const dobRaw = document.getElementById('inDob').value.trim();
     CLIENT.name = `${fn} ${ln}`;
-    if (dobRaw) {
-      const parts = dobRaw.split('.');
-      CLIENT.dob = parts.length === 3 ? `${parseInt(parts[0])}. ${parseInt(parts[1])}. ${parts[2]}` : dobRaw;
-    }
+    if (dobRaw) CLIENT.dob = dobRaw;
     clearBar(); userMsg(CLIENT.name); await step1_client();
   });
 }
@@ -503,31 +506,32 @@ async function step1_datetime() {
 
   setBar(`
     <div class="bar-row">
-      <div class="float-wrap" style="flex:2"><input class="input-field" type="text" id="inDate" placeholder="15.05.2025" maxlength="10" inputmode="numeric" autocomplete="off"><label class="float-label float-label--always" for="inDate">Datum</label></div>
+      <div class="float-wrap" style="flex:2"><input class="input-field" type="date" id="inDate"><label class="float-label float-label--always" for="inDate">Datum</label></div>
       <div class="float-wrap" style="flex:1"><input class="input-field" type="text" id="inTime" placeholder="09:00" maxlength="5" inputmode="numeric" autocomplete="off"><label class="float-label float-label--always" for="inTime">Čas</label></div>
     </div>
     <button class="btn btn--lg btn--primary btn--full" id="btnDateTime">Potvrdit</button>
   `);
 
-  // auto-dot formatter DD.MM.YYYY
-  const dateEl = document.getElementById('inDate');
-  dateEl.addEventListener('input', () => {
-    let v = dateEl.value.replace(/\D/g,'');
-    if (v.length > 2) v = v.slice(0,2) + '.' + v.slice(2);
-    if (v.length > 5) v = v.slice(0,5) + '.' + v.slice(5,9);
-    dateEl.value = v;
-  });
-
-  // auto-colon for time text input
+  // auto-colon: digits only, dot or colon triggers separator insert
   const timeEl = document.getElementById('inTime');
   timeEl.addEventListener('input', () => {
-    let v = timeEl.value.replace(/\D/g,'');
-    if (v.length > 2) v = v.slice(0,2) + ':' + v.slice(2,4);
+    const raw = timeEl.value;
+    const hasSep = /[.:]/.test(raw);
+    const digits = raw.replace(/\D/g, '');
+    let v;
+    if (digits.length > 2 || (digits.length === 2 && hasSep)) {
+      v = digits.slice(0,2) + ':' + digits.slice(2,4);
+    } else if (digits.length === 2 && hasSep) {
+      v = digits + ':';
+    } else {
+      v = digits;
+    }
     timeEl.value = v;
   });
 
   document.getElementById('btnDateTime').addEventListener('click', async () => {
-    const d = dateEl.value.trim() || '15.05.2025';
+    const dateEl = document.getElementById('inDate');
+    const d = dateEl.value ? new Date(dateEl.value + 'T12:00:00').toLocaleDateString('cs-CZ') : '15. 5. 2025';
     const t = timeEl.value.trim() || '09:00';
     clearBar(); userMsg(`${d} v ${t}`); await step1_address();
   });
@@ -648,55 +652,13 @@ async function runAnalysis() {
 
 async function step2_result(count) {
   userMsg(count > 0 ? `${count} soubor${count>1?(count<5?'y':'ů'):''}` : 'Přeskočeno');
-  await botMsg(count > 0 ? 'Soubory zpracovány. AI identifikovala následující škody:' : 'Pokračuji bez fotodokumentace. Na základě vašeho popisu jsem identifikoval tyto škody:', 2000);
-
-  const ac = document.createElement('div');
-  ac.className = 'ai-card';
-  // only show the covered items in AI result (uncovered ones need user context)
-  const detectedDmgs = S.damages.filter(d => d.covered);
-  ac.innerHTML = `
-    <div class="ai-card__header">${ICO.ai} <span>AI analýza dokončena</span></div>
-    <div class="ai-card__body">${detectedDmgs.map(d=>`<div class="ai-dmg-row">${ICO.check}<span>${d.text}</span></div>`).join('')}</div>
-  `;
-  await botCard(ac, 300);
-  await sleep(300);
-  await botMsg('Stalo se tam ještě něco dalšího?', 700);
-
-  setBar(`
-    <div class="chips-row">
-      <button class="btn btn--lg btn--secondary" id="btnAddDmg2">Přidat škodu</button>
-      <button class="btn btn--lg btn--primary" style="flex:1" id="btnNoDmg2">Ne, to je vše</button>
-    </div>
-  `);
-
-  document.getElementById('btnAddDmg2').addEventListener('click', () => step2_addDamage());
-  document.getElementById('btnNoDmg2').addEventListener('click', async () => { clearBar(); userMsg('Ne, to je vše'); await goStep3(); });
+  await botMsg(count > 0 ? 'Soubory zpracovány.' : 'Pokračuji bez fotodokumentace.', 1200);
+  await goStep3();
 }
 
-function step2_addDamage() {
-  setBar(`
-    <div class="float-wrap"><input class="input-field" type="text" id="inExtraDmg" placeholder=" "><label class="float-label" for="inExtraDmg">Popis škody</label></div>
-    <div class="bar-row">
-      <button class="btn btn--lg btn--primary" style="flex:1" id="btnSaveDmg">Přidat</button>
-      <button class="btn btn--lg btn--secondary" id="btnDoneDmg">Dokončit</button>
-    </div>
-  `);
-  setupFloat(document.getElementById('inExtraDmg'));
-  document.getElementById('btnSaveDmg').addEventListener('click', async () => {
-    const txt = document.getElementById('inExtraDmg').value.trim();
-    if (!txt) return;
-    S.damages.push({id:S.nextId++, text:txt, covered:false, amount:0, added:true});
-    userMsg(txt);
-    document.getElementById('inExtraDmg').value='';
-    document.getElementById('inExtraDmg').classList.remove('has-val');
-    await botMsg(`Zaznamenáno: „${txt}"`, 500);
-    step2_addDamage();
-  });
-  document.getElementById('btnDoneDmg').addEventListener('click', async () => { clearBar(); userMsg('Hotovo'); await goStep3(); });
-}
 
 // ─── STEP 3: ŠKODY ─────────────────────────────────────────
-async function goStep3() {
+async function goStep3() { setStep(3);
   setStep(3);
   await botMsg('Přehled všech zaznamenaných škod. Zkontrolujte a případně upravte.', 1100);
 
@@ -886,7 +848,7 @@ function step5_accountEdit() {
   });
 }
 
-async function step5_success() {
+async function step5_success() { updateProgress(100); progressCount = PROGRESS_TOTAL;
   const covered = S.damages.filter(d => d.covered);
   const net = covered.reduce((s,d)=>s+d.amount,0) - DEDUCTIBLE;
   await botMsg(`Hotovo! Žádost je zlikvidována. ${net.toLocaleString('cs-CZ')} Kč směřuje na účet ${S.account}.`, 1000);
