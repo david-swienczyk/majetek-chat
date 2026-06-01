@@ -86,7 +86,13 @@ img{display:block;max-width:100%}
 .float-label{position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:400;color:#006B55;pointer-events:none;transition:all .15s ease;transform-origin:left center;white-space:nowrap}
 .input-field:focus~.float-label,.input-field.has-val~.float-label{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
 .float-label--always{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
-input[type="date"].input-field{height:56px!important;min-height:56px!important;max-height:56px!important;box-sizing:border-box;padding-top:22px;color-scheme:light}
+/* date overlay wrapper — clips iOS native picker height */
+.date-wrap{position:relative;height:56px;border-radius:16px;border:1px solid var(--light-forms-outline);background:var(--light-forms-bg);overflow:hidden;transition:border .1s,box-shadow .15s}
+.date-wrap:focus-within{border:4px solid var(--specific-focus);background:var(--light-forms-hover);box-shadow:var(--shadow-input)}
+.date-wrap input[type="date"]{position:absolute;inset:0;width:100%;height:200%;opacity:0;cursor:pointer;z-index:2;font-size:16px;color-scheme:light}
+.date-display{position:absolute;inset:0;z-index:1;pointer-events:none;padding:22px 16px 8px;font-size:16px;font-weight:500;color:var(--gd-bg)}
+.date-display:empty::before{content:attr(data-placeholder);color:var(--light-helper)}
+.date-label{position:absolute;left:17px;top:14px;font-size:9px;font-weight:500;color:#006B55;pointer-events:none;z-index:3;letter-spacing:.3px}
 textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;resize:none;overflow-y:auto;line-height:1.5}
 
 /* === TAGS === */
@@ -507,10 +513,22 @@ async function step1_datetime() {
   await botMsg('Kdy přesně k události došlo?', 900);
 
   setBar(`
-    <div class="float-wrap"><input class="input-field" type="date" id="inDate"><label class="float-label float-label--always" for="inDate">Datum</label></div>
+    <div class="date-wrap"><span class="date-label">Datum</span><div class="date-display" id="inDateDisplay" data-placeholder="dd.mm.rrrr"></div><input type="date" id="inDate"></div>
     <div class="float-wrap" style="max-width:160px"><input class="input-field" type="text" id="inTime" placeholder="09:00" maxlength="5" inputmode="numeric" autocomplete="off"><label class="float-label float-label--always" for="inTime">Čas</label></div>
     <button class="btn btn--lg btn--primary btn--full" id="btnDateTime">Potvrdit</button>
   `);
+
+  // sync date display div with native date input value
+  const dateEl = document.getElementById('inDate');
+  const dateDisp = document.getElementById('inDateDisplay');
+  dateEl.addEventListener('change', () => {
+    if (dateEl.value) {
+      const d = new Date(dateEl.value + 'T12:00:00');
+      dateDisp.textContent = d.toLocaleDateString('cs-CZ');
+    } else {
+      dateDisp.textContent = '';
+    }
+  });
 
   // auto-colon: digits only, dot or colon triggers separator insert
   const timeEl = document.getElementById('inTime');
@@ -530,7 +548,6 @@ async function step1_datetime() {
   });
 
   document.getElementById('btnDateTime').addEventListener('click', async () => {
-    const dateEl = document.getElementById('inDate');
     const d = dateEl.value ? new Date(dateEl.value + 'T12:00:00').toLocaleDateString('cs-CZ') : '15. 5. 2025';
     const t = timeEl.value.trim() || '09:00';
     clearBar(); userMsg(`${d} v ${t}`); await step1_address();
