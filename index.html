@@ -781,20 +781,7 @@ async function goStep4() {
 
   if (rejected.length > 0) {
     await sleep(300);
-    await botMsg('Chcete podat námitku k zamítnutým položkám?', 900);
-
-    setBar(`
-      <div class="chips-row">
-        <button class="btn btn--lg btn--secondary" id="btnObjection">Podat námitku</button>
-        <button class="btn btn--lg btn--primary" style="flex:1" id="btnToPayout">Pokračovat na výplatu</button>
-      </div>
-      ${liqRowHtml()}
-    `);
-    document.getElementById('btnObjection').addEventListener('click', async () => {
-      clearBar(); userMsg('Podat námitku');
-      await botMsg('Námitka už je u nás. Tým likvidace vás bude kontaktovat do 3 pracovních dnů. Mezitím vyřešíme schválené položky.', 1100);
-      await sleep(300); await goStep5();
-    });
+    setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnToPayout">Pokračovat na výplatu</button>${liqRowHtml()}`);
     document.getElementById('btnToPayout').addEventListener('click', async () => { clearBar(); userMsg('Pokračovat na výplatu'); await goStep5(); });
     bindLiqBtn();
   } else {
@@ -817,7 +804,7 @@ async function goStep5() {
   fc.className = 'fin-card';
   fc.innerHTML = `
     <div class="fin-card__header">
-      <div><div class="fin-card__label">Celkové plnění</div></div>
+      <div><div class="fin-card__label">Částka k vyplacení</div></div>
       <div style="text-align:right">
         <div class="fin-card__gross">${gross.toLocaleString('cs-CZ')} Kč</div>
         <div class="fin-card__period">hrubá částka</div>
