@@ -156,6 +156,7 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .fin-row--total .fin-row__label{color:var(--gd-bg);font-weight:600;font-size:14px}
 .fin-row--total .fin-row__amount{color:var(--gd-bg);font-weight:700;font-size:15px}
 .fin-account{padding:12px 16px;background:var(--grey-25);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fin-account--edit{flex-direction:column;align-items:stretch}
 .fin-account__num{font-size:12px;font-weight:500;color:var(--gd-bg);flex:1}
 .fin-account__change{font-size:12px;font-weight:600;color:var(--light-content-sec);text-decoration:underline;cursor:pointer;border:none;background:none;white-space:nowrap}
 .fin-card__footer{background:var(--gl-bg);padding:10px 16px;font-size:12px;font-weight:600;color:var(--gd-bg);display:flex;align-items:center;gap:6px}
@@ -420,7 +421,7 @@ async function callLiquidator() {
   await sleep(200);
   await botMsg('Spojuji…', 800);
   await sleep(1500);
-  await botMsg('Kolega z likvidace (+420 800 100 200) vás bude kontaktovat do 5 minut na telefonní číslo ze smlouvy.', 1000);
+  await botMsg('Kolega z likvidace (+420 270 270 777) vás bude kontaktovat do 5 minut na telefonní číslo ze smlouvy.', 1000);
   await sleep(300);
   // restore whatever bar is appropriate for current step
   restoreStepBar();
@@ -830,16 +831,18 @@ async function goStep5() {
 
 function step5_accountEdit() {
   const section = document.getElementById('accountSection');
+  section.classList.add('fin-account--edit');
   section.innerHTML = `
-    <div class="float-wrap" style="flex:1">
+    <div class="float-wrap" style="width:100%">
       <input class="input-field" type="text" id="inAccount" placeholder=" " value="${S.account}" style="height:44px;padding:16px 12px 4px;font-size:13px;border-radius:10px">
       <label class="float-label" for="inAccount" style="left:13px">Číslo bankovního účtu</label>
     </div>
-    <button class="btn btn--sm btn--primary" id="btnSaveAccount" style="flex-shrink:0">Uložit</button>
+    <button class="btn btn--md btn--primary btn--full" id="btnSaveAccount">Uložit</button>
   `;
   setupFloat(document.getElementById('inAccount'));
   document.getElementById('btnSaveAccount').addEventListener('click', () => {
     S.account = document.getElementById('inAccount').value.trim() || S.account;
+    section.classList.remove('fin-account--edit');
     section.innerHTML = `
       <span class="fin-account__num">${ICO.email}&nbsp; Bankovní účet: ${S.account}</span>
       <button class="fin-account__change" id="btnChangeAccount2">Změnit</button>
