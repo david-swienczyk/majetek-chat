@@ -1658,8 +1658,6 @@ function saveStep5Account() {
 async function step5_success() { updateProgress(100); progressCount = PROGRESS_TOTAL;
   const covered = S.damages.filter(d => d.covered);
   const net = covered.reduce((s,d)=>s+d.amount,0) - DEDUCTIBLE;
-  await botMsg(`Hotovo! Škoda je vyřešená. Na váš účet ${S.account} posíláme ${net.toLocaleString('cs-CZ')} Kč.`, 1000);
-  await sleep(800);
 
   const ref = `2025-${String(Math.floor(1000+Math.random()*8999))}-${String(Math.floor(100+Math.random()*899))}`;
   const sc = document.createElement('div');
@@ -1669,11 +1667,12 @@ async function step5_success() { updateProgress(100); progressCount = PROGRESS_T
     <div class="success-title">Škoda je vyřešená!</div>
     <div class="success-ref">Číslo události: ${ref}</div>
     <div class="success-note">
+      Na účet <strong>${S.account}</strong> posíláme <strong>${net.toLocaleString('cs-CZ')} Kč</strong>.<br>
       Peníze očekávejte během pár minut.<br><br>
       Přehled řešení škody jsme poslali na <strong>${CLIENT.email}</strong>.
     </div>
   `;
-  await botCard(sc, 200);
+  await botCard(sc, 500);
 
   await sleep(500);
   await botMsg('Jak hodnotíte průběh nahlašování?', 700);
