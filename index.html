@@ -87,6 +87,12 @@ img{display:block;max-width:100%}
 .input-field{width:100%;height:56px;border-radius:16px;border:1px solid var(--light-forms-outline);background:var(--light-forms-bg);padding:22px 16px 8px;font-size:16px;font-weight:500;color:var(--gd-bg);outline:none;transition:border .1s,background .1s,box-shadow .15s;font-family:var(--ff)}
 .input-field:hover{box-shadow:inset 0 0 0 1px var(--light-forms-outline)}
 .input-field:focus{border:1px solid var(--specific-focus);background:var(--light-forms-hover);box-shadow:inset 0 0 0 3px var(--specific-focus),var(--shadow-input)}
+.input-field.is-error,
+.date-field.is-error .input-field,
+.voice-wrap.is-error .input-field{border-color:var(--error-bg);background:var(--error-content);box-shadow:inset 0 0 0 1px var(--error-bg)}
+.input-field.is-error:focus,
+.date-field.is-error:focus-within .input-field,
+.voice-wrap.is-error .input-field:focus{border-color:var(--error-bg);background:var(--error-content);box-shadow:inset 0 0 0 3px var(--error-bg),var(--shadow-input)}
 .float-label{position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:400;color:#006B55;pointer-events:none;transition:all .15s ease;transform-origin:left center;white-space:nowrap}
 .input-field:focus~.float-label,.input-field.has-val~.float-label{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
 .float-label--always{top:14px;transform:translateY(0) scale(.75);font-size:12px;font-weight:500}
@@ -328,6 +334,10 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .bar-inner{display:flex;flex-direction:column;gap:10px;animation:bar-in 250ms ease both}
 .bar-row{display:flex;gap:8px;align-items:flex-end}
 .bar-row>.float-wrap{width:auto}
+.bar-row--fields{align-items:flex-start}
+.field-group{display:flex;flex-direction:column;gap:6px;width:100%;min-width:0}
+.field-error{display:none;font-size:12px;font-weight:600;line-height:1.4;color:var(--error-bg);padding:0 2px}
+.field-error.visible{display:block}
 .bar-hint{font-size:12px;font-weight:500;color:var(--light-helper);text-align:center}
 .chips-row{display:flex;gap:8px;flex-wrap:wrap}
 .hint-box{background:var(--gl-bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--gd-bg);line-height:1.6}
@@ -576,6 +586,101 @@ function setupFloat(input) {
   const upd = () => input.value ? input.classList.add('has-val') : input.classList.remove('has-val');
   input.addEventListener('input', upd); input.addEventListener('change', upd); upd();
 }
+function errorTargetFor(input, wrapperSelector) {
+  return wrapperSelector ? input?.closest(wrapperSelector) : input;
+}
+function setFieldError(inputId, errorId, message, wrapperSelector = null) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+  const target = errorTargetFor(input, wrapperSelector);
+  if (target) target.classList.add('is-error');
+  if (input) {
+    input.setAttribute('aria-invalid', 'true');
+    const describedBy = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+    if (!describedBy.includes(errorId)) describedBy.push(errorId);
+    input.setAttribute('aria-describedby', describedBy.join(' '));
+  }
+  if (error) {
+    error.textContent = message;
+    error.classList.add('visible');
+  }
+}
+function clearFieldError(inputId, errorId, wrapperSelector = null) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+  const target = errorTargetFor(input, wrapperSelector);
+  if (target) target.classList.remove('is-error');
+  if (input) {
+    input.removeAttribute('aria-invalid');
+    const describedBy = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(id => id && id !== errorId);
+    if (describedBy.length) input.setAttribute('aria-describedby', describedBy.join(' '));
+    else input.removeAttribute('aria-describedby');
+  }
+  if (error) {
+    error.textContent = '';
+    error.classList.remove('visible');
+  }
+}
+function bindErrorClear(inputId, errorId, wrapperSelector = null) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const clear = () => clearFieldError(inputId, errorId, wrapperSelector);
+  input.addEventListener('input', clear);
+  input.addEventListener('change', clear);
+}
+function focusFirstInvalid(inputIds) {
+  const first = inputIds.map(id => document.getElementById(id)).find(input => input && input.getAttribute('aria-invalid') === 'true');
+  if (!first) return;
+  first.focus({ preventScroll: true });
+  first.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+function validateRequiredText(inputId, errorId, message, wrapperSelector = null) {
+  const input = document.getElementById(inputId);
+  const value = input?.value.trim() || '';
+  if (!value) {
+    setFieldError(inputId, errorId, message, wrapperSelector);
+    return false;
+  }
+  clearFieldError(inputId, errorId, wrapperSelector);
+  return true;
+}
+function validateRequiredDate(inputId, errorId, emptyMessage, invalidMessage) {
+  const input = document.getElementById(inputId);
+  const value = input?.value.trim() || '';
+  if (!value) {
+    setFieldError(inputId, errorId, emptyMessage, '.date-field');
+    return false;
+  }
+  if (!isValidDateValue(value)) {
+    setFieldError(inputId, errorId, invalidMessage, '.date-field');
+    return false;
+  }
+  input.value = formatDateDisplay(value);
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  clearFieldError(inputId, errorId, '.date-field');
+  return true;
+}
+function isValidTimeValue(value) {
+  const match = value.trim().match(/^(\d{2}):(\d{2})$/);
+  if (!match) return false;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+}
+function validateRequiredTime(inputId, errorId) {
+  const input = document.getElementById(inputId);
+  const value = input?.value.trim() || '';
+  if (!value) {
+    setFieldError(inputId, errorId, 'Zadejte čas události.');
+    return false;
+  }
+  if (!isValidTimeValue(value)) {
+    setFieldError(inputId, errorId, 'Zadejte čas ve formátu HH:MM.');
+    return false;
+  }
+  clearFieldError(inputId, errorId);
+  return true;
+}
 
 function normalizeDateChars(value) {
   return value
@@ -823,6 +928,7 @@ function startDescVoiceInput(onDone) {
     const nextValue = textarea.value.trim() ? `${textarea.value.trim()} ${dictatedText}` : dictatedText;
     const max = Number(textarea.getAttribute('maxlength')) || 1000;
     textarea.value = nextValue.slice(0, max);
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
 
     btn.classList.remove('listening');
     btn.setAttribute('aria-label', 'Nadiktovat popis události');
@@ -868,14 +974,23 @@ async function step1() {
   await botMsg('Potřebujeme nejprve ověřit vaši totožnost.', 1000);
 
   setBar(`
-    <div class="float-wrap"><input class="input-field" type="text" id="inFn" placeholder=" " autocomplete="given-name"><label class="float-label" for="inFn">Jméno</label></div>
-    <div class="float-wrap"><input class="input-field" type="text" id="inLn" placeholder=" " autocomplete="family-name"><label class="float-label" for="inLn">Příjmení</label></div>
-    <div class="bar-row">
-      <div class="date-field" style="flex:0 0 calc(50% - 4px)">
-        <input class="input-field" type="text" id="inDob" placeholder="DD.MM.RRRR" inputmode="decimal" autocomplete="bday" maxlength="10">
-        <label class="float-label float-label--always" for="inDob">Datum narození</label>
-        <div class="date-picker-btn" aria-hidden="true">${ICO.calendar}</div>
-        <input type="date" id="inDobPicker" class="date-picker-native" aria-label="Vybrat datum narození z kalendáře">
+    <div class="field-group">
+      <div class="float-wrap"><input class="input-field" type="text" id="inFn" placeholder=" " autocomplete="given-name"><label class="float-label" for="inFn">Jméno</label></div>
+      <div class="field-error" id="errFn" role="alert"></div>
+    </div>
+    <div class="field-group">
+      <div class="float-wrap"><input class="input-field" type="text" id="inLn" placeholder=" " autocomplete="family-name"><label class="float-label" for="inLn">Příjmení</label></div>
+      <div class="field-error" id="errLn" role="alert"></div>
+    </div>
+    <div class="bar-row bar-row--fields">
+      <div class="field-group" style="flex:0 0 calc(50% - 4px)">
+        <div class="date-field">
+          <input class="input-field" type="text" id="inDob" placeholder="DD.MM.RRRR" inputmode="decimal" autocomplete="bday" maxlength="10">
+          <label class="float-label float-label--always" for="inDob">Datum narození</label>
+          <div class="date-picker-btn" aria-hidden="true">${ICO.calendar}</div>
+          <input type="date" id="inDobPicker" class="date-picker-native" aria-label="Vybrat datum narození z kalendáře">
+        </div>
+        <div class="field-error" id="errDob" role="alert"></div>
       </div>
     </div>
     <button class="btn btn--lg btn--primary btn--full" id="btnVerify">Ověřit identitu</button>
@@ -884,13 +999,27 @@ async function step1() {
   ['inFn','inLn'].forEach(id => setupFloat(document.getElementById(id)));
   setupFloat(document.getElementById('inDob'));
   bindDateField('inDob', 'inDobPicker');
+  bindErrorClear('inFn', 'errFn');
+  bindErrorClear('inLn', 'errLn');
+  bindErrorClear('inDob', 'errDob', '.date-field');
 
   document.getElementById('btnVerify').addEventListener('click', async () => {
-    const fn = document.getElementById('inFn').value.trim() || 'Jan';
-    const ln = document.getElementById('inLn').value.trim() || 'Novák';
-    const dobRaw = dateValueOrFallback('inDob', '');
+    const isValid = [
+      validateRequiredText('inFn', 'errFn', 'Zadejte jméno.'),
+      validateRequiredText('inLn', 'errLn', 'Zadejte příjmení.'),
+      validateRequiredDate('inDob', 'errDob', 'Zadejte datum narození.', 'Zadejte platné datum narození ve formátu DD.MM.RRRR.')
+    ].every(Boolean);
+    if (!isValid) {
+      focusFirstInvalid(['inFn', 'inLn', 'inDob']);
+      updateChatPadding();
+      return;
+    }
+
+    const fn = document.getElementById('inFn').value.trim();
+    const ln = document.getElementById('inLn').value.trim();
+    const dobRaw = formatDateDisplay(document.getElementById('inDob').value.trim());
     CLIENT.name = `${fn} ${ln}`;
-    if (dobRaw) CLIENT.dob = dobRaw;
+    CLIENT.dob = dobRaw;
     clearBar(); userMsg(CLIENT.name); await step1_client();
   });
 }
@@ -917,14 +1046,17 @@ async function step1_describe() {
   await botMsg('Popište prosím, co se stalo – uveďte, co bylo poškozeno, jak k tomu došlo a odhadovaný rozsah škody.', 1200);
 
   setBar(`
-    <div class="voice-wrap">
-      <textarea class="input-field" id="inDesc" placeholder="Popište co se přihodilo..." rows="2" maxlength="1000"></textarea>
-      <button type="button" class="voice-btn" id="btnVoiceDesc" aria-controls="inDesc" aria-label="Nadiktovat popis události">
-        ${ICO.mic}
-        <span id="voiceDescLabel">Namluvit</span>
-      </button>
+    <div class="field-group">
+      <div class="voice-wrap">
+        <textarea class="input-field" id="inDesc" placeholder="Popište co se přihodilo..." rows="2" maxlength="1000"></textarea>
+        <button type="button" class="voice-btn" id="btnVoiceDesc" aria-controls="inDesc" aria-label="Nadiktovat popis události">
+          ${ICO.mic}
+          <span id="voiceDescLabel">Namluvit</span>
+        </button>
+      </div>
+      <div class="voice-status" id="voiceDescStatus" aria-live="polite"></div>
+      <div class="field-error" id="errDesc" role="alert"></div>
     </div>
-    <div class="voice-status" id="voiceDescStatus" aria-live="polite"></div>
     <div class="hint-box">💡 Příklad: „Při vaření přetekl kastrol a zalil sklokeramickou desku, která praskla. Zároveň se poškodil povrch kuchyňské linky."</div>
     <button class="btn btn--lg btn--primary btn--full" id="btnSendDesc">Odeslat popis</button>
   `);
@@ -932,10 +1064,16 @@ async function step1_describe() {
   const ta = document.getElementById('inDesc');
   const resizeDesc = () => { ta.style.height='auto'; ta.style.height=Math.min(Math.max(ta.scrollHeight,120),180)+'px'; };
   ta.addEventListener('input', resizeDesc);
+  bindErrorClear('inDesc', 'errDesc', '.voice-wrap');
   document.getElementById('btnVoiceDesc').addEventListener('click', () => startDescVoiceInput(resizeDesc));
 
   document.getElementById('btnSendDesc').addEventListener('click', async () => {
-    const desc = ta.value.trim() || 'Při vaření se poškodila sklokeramická deska a kuchyňská linka.';
+    if (!validateRequiredText('inDesc', 'errDesc', 'Popište prosím, co se stalo.', '.voice-wrap')) {
+      focusFirstInvalid(['inDesc']);
+      updateChatPadding();
+      return;
+    }
+    const desc = ta.value.trim();
     clearBar(); userMsg(desc); await step1_datetime();
   });
 }
@@ -944,16 +1082,20 @@ async function step1_datetime() {
   await botMsg('Kdy přesně k události došlo?', 900);
 
   setBar(`
-    <div class="bar-row">
-      <div style="flex:1;min-width:0">
+    <div class="bar-row bar-row--fields">
+      <div class="field-group" style="flex:1;min-width:0">
         <div class="date-field">
           <input class="input-field" type="text" id="inDate" placeholder="DD.MM.RRRR" inputmode="decimal" autocomplete="off" maxlength="10">
           <label class="float-label float-label--always" for="inDate">Datum</label>
           <div class="date-picker-btn" aria-hidden="true">${ICO.calendar}</div>
           <input type="date" id="inDatePicker" class="date-picker-native" aria-label="Vybrat datum události z kalendáře">
         </div>
+        <div class="field-error" id="errDate" role="alert"></div>
       </div>
-      <div style="flex:1;min-width:0"><div class="float-wrap"><input class="input-field" type="text" id="inTime" placeholder="09:00" maxlength="5" inputmode="numeric" autocomplete="off"><label class="float-label float-label--always" for="inTime">Čas</label></div></div>
+      <div class="field-group" style="flex:1;min-width:0">
+        <div class="float-wrap"><input class="input-field" type="text" id="inTime" placeholder="09:00" maxlength="5" inputmode="numeric" autocomplete="off"><label class="float-label float-label--always" for="inTime">Čas</label></div>
+        <div class="field-error" id="errTime" role="alert"></div>
+      </div>
     </div>
     <button class="btn btn--lg btn--primary btn--full" id="btnDateTime">Potvrdit</button>
   `);
@@ -961,6 +1103,8 @@ async function step1_datetime() {
   const dateEl = document.getElementById('inDate');
   setupFloat(dateEl);
   bindDateField('inDate', 'inDatePicker');
+  bindErrorClear('inDate', 'errDate', '.date-field');
+  bindErrorClear('inTime', 'errTime');
 
   // auto-colon: digits only, dot or colon triggers separator insert
   const timeEl = document.getElementById('inTime');
@@ -980,8 +1124,18 @@ async function step1_datetime() {
   });
 
   document.getElementById('btnDateTime').addEventListener('click', async () => {
-    const d = dateValueOrFallback('inDate', '15. 5. 2025');
-    const t = timeEl.value.trim() || '09:00';
+    const isValid = [
+      validateRequiredDate('inDate', 'errDate', 'Zadejte datum události.', 'Zadejte platné datum události ve formátu DD.MM.RRRR.'),
+      validateRequiredTime('inTime', 'errTime')
+    ].every(Boolean);
+    if (!isValid) {
+      focusFirstInvalid(['inDate', 'inTime']);
+      updateChatPadding();
+      return;
+    }
+
+    const d = formatDateDisplay(dateEl.value.trim());
+    const t = timeEl.value.trim();
     clearBar(); userMsg(`${d} v ${t}`); await step1_address();
   });
 }
@@ -990,13 +1144,21 @@ async function step1_address() {
   await botMsg('Zadejte prosím adresu místa události.', 900);
 
   setBar(`
-    <div class="float-wrap"><input class="input-field" type="text" id="inAddr" placeholder=" " autocomplete="street-address"><label class="float-label" for="inAddr">Adresa události</label></div>
+    <div class="field-group">
+      <div class="float-wrap"><input class="input-field" type="text" id="inAddr" placeholder=" " autocomplete="street-address"><label class="float-label" for="inAddr">Adresa události</label></div>
+      <div class="field-error" id="errAddr" role="alert"></div>
+    </div>
     <button class="btn btn--lg btn--primary btn--full" id="btnAddrSend">Potvrdit adresu</button>
   `);
   setupFloat(document.getElementById('inAddr'));
+  bindErrorClear('inAddr', 'errAddr');
   document.getElementById('btnAddrSend').addEventListener('click', async () => {
     const a = document.getElementById('inAddr').value.trim();
-    if (!a) { document.getElementById('inAddr').focus(); return; }
+    if (!validateRequiredText('inAddr', 'errAddr', 'Zadejte adresu místa události.')) {
+      focusFirstInvalid(['inAddr']);
+      updateChatPadding();
+      return;
+    }
     clearBar(); userMsg(a); await goStep2();
   });
 }
