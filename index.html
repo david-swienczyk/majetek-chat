@@ -69,14 +69,14 @@ img{display:block;max-width:100%}
 .typing-dot:nth-child(1){animation-delay:0s}.typing-dot:nth-child(2){animation-delay:.15s}.typing-dot:nth-child(3){animation-delay:.30s}
 
 /* === BUTTONS === */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:var(--ff);font-size:14px;font-weight:600;letter-spacing:.7px;border-radius:28px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:var(--ff);font-size:14px;font-weight:600;letter-spacing:.7px;border-radius:28px;cursor:pointer;transition:background .15s,box-shadow .15s,color .15s,border-color .15s,transform .15s;white-space:nowrap;text-decoration:none}
 .btn--lg{height:56px;padding:0 20px;border-radius:28px}
 .btn--md{height:36px;padding:0 12px;border-radius:18px}
 .btn--sm{height:32px;padding:0 10px;border-radius:16px}
 .btn--primary{background:linear-gradient(227deg,#005544 0%,#004033 100%);color:#F9FCE2;box-shadow:var(--shadow-btn)}
-.btn--primary:hover{background:#005544;box-shadow:none}
+.btn--primary:hover{background:linear-gradient(227deg,#00624F 0%,#005544 100%);box-shadow:-2px 2px 8px rgba(0,64,51,.12)}
 .btn--secondary{background:#F9FCE2;color:#004033;border:1px solid #004033}
-.btn--secondary:hover{border-width:2px}
+.btn--secondary:hover{box-shadow:inset 0 0 0 1px #004033}
 .btn--tertiary{background:transparent;color:#004033;text-decoration:underline}
 .btn--tertiary:hover{text-decoration:none}
 .btn--full{width:100%}
@@ -141,14 +141,15 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .upload-overlay{position:absolute;inset:0;background:rgba(249,252,226,.92);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 .upload-overlay__text{font-size:13px;font-weight:500;color:var(--gd-bg)}
 .media-doc{display:flex;flex-direction:column;gap:16px}
+.media-groups{display:grid;gap:16px;align-items:stretch}
 .media-info{background:var(--gl-bg);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;color:var(--gd-bg);font-size:13px;line-height:1.45}
 .media-info__icon{width:20px;height:20px;flex-shrink:0;margin-top:1px}
 .media-info__icon svg{width:18px;height:18px}
-.media-group{display:flex;flex-direction:column;gap:8px}
+.media-group{display:flex;flex-direction:column;gap:8px;min-width:0}
 .media-head{padding:0 2px}
 .media-title{font-size:16px;font-weight:600;color:var(--gd-bg);line-height:1.3;margin-bottom:4px}
 .media-helper{font-size:13px;color:var(--light-helper);line-height:1.4}
-.media-zone{border:2px dashed var(--light-outline);border-radius:14px;min-height:104px;padding:16px;display:flex;align-items:center;gap:16px;background:var(--grey-25);cursor:pointer;text-align:left;transition:background .15s,border-color .15s}
+.media-zone{border:2px dashed var(--light-outline);border-radius:14px;min-height:104px;padding:16px;display:flex;align-items:center;gap:16px;background:var(--grey-25);cursor:pointer;text-align:left;transition:background .15s,border-color .15s;width:100%}
 .media-zone:hover,.media-zone:active{background:var(--light-bg);border-color:var(--light-forms-outline)}
 .media-zone__icon{width:36px;height:36px;color:var(--light-helper);flex-shrink:0}
 .media-zone__icon svg{width:36px;height:36px;display:block}
@@ -168,6 +169,34 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .media-add:hover{text-decoration:none}
 .file-hidden{display:none}
 
+/* === AI ANALYSIS === */
+.ai-loading-card{text-align:center;padding:10px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.ai-loading-icon{width:72px;height:72px;border-radius:50%;background:var(--light-bg);display:flex;align-items:center;justify-content:center;color:var(--gd-bg);animation:pulse 1.6s ease-in-out infinite}
+.ai-spinner{width:40px;height:40px;border:4px solid var(--light-bg);border-top-color:var(--gd-bg);border-radius:50%;animation:spin .85s linear infinite}
+.ai-loading-title{font-size:18px;font-weight:600;color:var(--gd-bg)}
+.ai-loading-sub{font-size:13px;color:var(--light-helper);line-height:1.45;margin-top:4px}
+.ai-result-card{display:flex;flex-direction:column;gap:12px}
+.analysis-info{background:var(--gl-bg);border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;color:var(--gd-bg);font-size:13px;line-height:1.4}
+.analysis-info__icon{width:18px;height:18px;flex-shrink:0;margin-top:1px}
+.result-card{border:1px solid var(--grey-50);border-radius:14px;padding:12px;background:#fff}
+.result-card__title{font-size:15px;font-weight:600;color:var(--gd-bg);margin-bottom:2px}
+.found-dmg-list{display:flex;flex-direction:column}
+.found-dmg-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--grey-50)}
+.found-dmg-item:last-child{border-bottom:none}
+.found-dmg-icon{width:20px;height:20px;flex-shrink:0;color:var(--grey-500);margin-top:2px}
+.found-dmg-texts{flex:1;min-width:0}
+.found-dmg-name{font-size:15px;font-weight:500;color:var(--gd-bg);line-height:1.25}
+.found-dmg-sub{font-size:12px;color:var(--light-helper);line-height:1.35;margin-top:1px}
+.found-dmg-edit{width:32px;height:32px;border-radius:10px;color:var(--light-content-sec);display:flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;flex-shrink:0}
+.found-dmg-edit:hover{background:var(--grey-25);color:var(--gd-bg)}
+.btn-add-dmg{display:inline-flex;align-items:center;gap:8px;color:var(--gd-bg);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:6px 0 0;border:none;background:none;cursor:pointer}
+.btn-add-dmg:hover{text-decoration:none}
+.asset-section{display:flex;flex-direction:column;gap:6px}
+.asset-section__title{font-size:15px;font-weight:600;color:var(--gd-bg);line-height:1.3}
+.asset-section__helper{font-size:13px;color:var(--light-helper);line-height:1.4}
+.textarea-counter{position:absolute;left:16px;bottom:18px;font-size:12px;font-weight:500;color:var(--light-helper);pointer-events:none}
+.asset-voice-wrap textarea.input-field{min-height:96px;max-height:160px;padding:16px 16px 58px}
+
 /* === DAMAGE LIST === */
 .damage-list{display:flex;flex-direction:column;gap:8px}
 .dmg-item{display:flex;align-items:center;gap:8px;background:var(--grey-25);border-radius:10px;padding:8px 10px}
@@ -183,6 +212,18 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .cov-row__actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .why-btn{font-size:11px;font-weight:600;color:var(--light-content-sec);background:var(--grey-25);border-radius:8px;padding:3px 8px;border:none;cursor:pointer;letter-spacing:.3px;white-space:nowrap}
 .why-btn:hover{background:var(--grey-50)}
+.coverage-summary{display:flex;flex-direction:column;gap:14px}
+.coverage-section{display:flex;flex-direction:column;gap:6px}
+.coverage-section__title{font-size:15px;font-weight:600;color:var(--gd-bg);line-height:1.3}
+.coverage-card{border:1px solid var(--grey-50);border-radius:14px;background:#fff;padding:8px 14px}
+.coverage-item{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--grey-50)}
+.coverage-item:last-child{border-bottom:none}
+.coverage-icon{width:24px;height:24px;flex-shrink:0;margin-top:2px}
+.coverage-texts{flex:1;min-width:0}
+.coverage-name{font-size:15px;font-weight:500;color:var(--gd-bg);line-height:1.3}
+.coverage-sub{font-size:13px;color:var(--light-helper);line-height:1.4;margin-top:2px}
+.coverage-more{display:inline-flex;align-items:center;font-size:13px;font-weight:500;color:var(--light-content-sec);background:none;border:none;padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.coverage-more:hover{text-decoration:none}
 
 /* === INFOBOX === */
 .infobox{border-radius:20px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px}
@@ -264,6 +305,16 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 @media(min-width:768px){
   /* back to fixed on tablet/desktop — keyboard handling not an issue there */
   .input-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border-radius:20px;box-shadow:-11px 11px 35px rgba(0,32,26,.2),-45px 44px 63px rgba(0,32,26,.1)}
+  .media-groups{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;column-gap:16px;row-gap:8px;align-items:stretch}
+  .media-group{display:contents}
+  .media-group[data-media-section="detail"]>.media-head{grid-column:1;grid-row:1}
+  .media-group[data-media-section="overall"]>.media-head{grid-column:2;grid-row:1}
+  .media-group[data-media-section="detail"]>.media-zone,
+  .media-group[data-media-section="detail"]>.media-section{grid-column:1;grid-row:2}
+  .media-group[data-media-section="overall"]>.media-zone,
+  .media-group[data-media-section="overall"]>.media-section{grid-column:2;grid-row:2}
+  .media-zone{align-self:stretch}
+  .media-section.visible{align-self:start}
 }
 
 /* === DESKTOP 1024px+ — DS grid: 1000px fixed centered === */
@@ -317,11 +368,15 @@ const ICO = {
   avatar: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 012-2h6a2 2 0 012 2v1.662"/></svg>`,
   checkCircle: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12l3 3 7-7"/></svg>`,
   check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`,
+  covCheck: `<svg class="coverage-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#E8F9E4"/><path d="M7.5 12l3.5 3.5 6-7" stroke="#165315" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  covCross: `<svg class="coverage-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#FDECEA"/><path d="M9 9l6 6M15 9l-6 6" stroke="#D02B1D" stroke-width="2" stroke-linecap="round"/></svg>`,
+  covClock: `<svg class="coverage-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#FFF3E0"/><circle cx="12" cy="12" r="4" stroke="#CE6E00" stroke-width="2"/><path d="M12 10v2.5l1.5 1.5" stroke="#CE6E00" stroke-width="1.8" stroke-linecap="round"/></svg>`,
   xmark: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
   cloudUp: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V9m0 0l-3 3m3-3l3 3"/><path d="M7.2 18.8A6 6 0 013.4 13a6 6 0 016-6 8 8 0 0115.2 2 6 6 0 010 12H7.2z"/></svg>`,
   camera: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="40" height="30" rx="6"/><circle cx="24" cy="26" r="8"/><path d="M16 10l3.5-6h9l3.5 6" stroke-linecap="round"/><circle cx="38" cy="17" r="2.5" fill="currentColor" stroke="none"/></svg>`,
   ai: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 3.5L17 8l-3.5 1.5L12 13l-1.5-3.5L7 8l3.5-1.5L12 3z"/><path d="M18.5 14l.75 1.75L21 16.5l-1.75.75L18.5 19l-.75-1.75L16 16.5l1.75-.75z"/></svg>`,
   plus: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  pencil: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
   warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"/></svg>`,
   clock: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
   calendar: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg>`,
@@ -342,11 +397,11 @@ const CLIENT = {
 };
 
 const BASE_DAMAGES = [
-  {id:1, text:'Poškozená sklokeramická varná deska', covered:true, amount:8500},
-  {id:2, text:'Prasklá dlaždice v kuchyni',          covered:true, amount:4200},
-  {id:3, text:'Poškozená kuchyňská linka',           covered:true, amount:5700},
+  {id:1, text:'Sklokeramická deska', sub:'Prasklá deska, varná zóna č. 2', covered:true, amount:8500},
+  {id:2, text:'Dlaždice v kuchyni', sub:'Prasklá dlaždice u kuchyňské linky', covered:true, amount:4200},
+  {id:3, text:'Kuchyňská linka', sub:'Poškozený povrch pracovní desky', covered:true, amount:5700},
   // AI detected, not covered (opotřebení)
-  {id:4, text:'Popraskání nátěru stěny za varnou deskou', covered:false, amount:0},
+  {id:4, text:'Nátěr stěny za varnou deskou', sub:'Popraskání nátěru — pravděpodobné opotřebení', covered:false, amount:0},
 ];
 
 const DEDUCTIBLE = 2000;
@@ -360,7 +415,7 @@ let progressCount = 0;
 const S = {
   step: 1, damages: JSON.parse(JSON.stringify(BASE_DAMAGES)),
   nextId: 10, rating: 0, account: FAKE_IBAN,
-  mediaFiles: { detail: [], overall: [] },
+  mediaFiles: { detail: [], overall: [] }, assetDetails: '',
 };
 
 function setStep(n) { S.step = n; }
@@ -748,10 +803,7 @@ async function callLiquidator() {
 
 function restoreStepBar() {
   if (S.step === 3) {
-    setBar(`<button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg">${ICO.plus} Přidat další škodu</button><button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg">Potvrdit seznam</button>${liqRowHtml()}`);
-    document.getElementById('btnMoreDmg').addEventListener('click', () => step3_add());
-    document.getElementById('btnConfirmDmg').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
-    bindLiqBtn();
+    setStep3Bar();
   }
 }
 
@@ -910,8 +962,10 @@ async function goStep2() {
       <span>Přidejte detailní i celkový pohled na škodu. Může jít o foto nebo video — důležité je zachytit detail poškození i širší kontext.</span>
     </div>
 
-    ${mediaUploadSectionHtml('detail', 'Detailní pohled *', 'Zachyťte prasklinu, poškozenou část nebo konkrétní místo škody.')}
-    ${mediaUploadSectionHtml('overall', 'Celkový pohled *', 'Zachyťte celou poškozenou věc a její okolí, aby byl jasný rozsah škody.')}
+    <div class="media-groups">
+      ${mediaUploadSectionHtml('detail', 'Detailní pohled *', 'Zachyťte prasklinu, poškozenou část nebo konkrétní místo škody.')}
+      ${mediaUploadSectionHtml('overall', 'Celkový pohled *', 'Zachyťte celou poškozenou věc a její okolí, aby byl jasný rozsah škody.')}
+    </div>
   `;
 
   const uploadWrap = await botCard(uploadEl, 400);
@@ -1054,126 +1108,311 @@ function removeMedia(section, index) {
 async function runAnalysis() {
   const count = S.mediaFiles.detail.length + S.mediaFiles.overall.length;
   userMsg(`Fotodokumentace přiložena (${mediaCountLabel(count)})`);
-  await botMsg('Analyzujeme poškození…', 500);
-  await sleep(2300);
-  await botMsg('AI analýza dokončena.', 700);
+  await botCard(createAiLoadingCard(), 300);
+  await sleep(2800);
   await goStep3();
+}
+
+function createAiLoadingCard() {
+  const el = document.createElement('div');
+  el.className = 'ai-loading-card';
+  el.innerHTML = `
+    <div class="ai-loading-icon">${ICO.ai}</div>
+    <div class="ai-spinner" aria-hidden="true"></div>
+    <div>
+      <div class="ai-loading-title">Analyzujeme poškození…</div>
+      <div class="ai-loading-sub">Chvilku strpení, AI prochází vaše foto a videa.</div>
+    </div>
+  `;
+  return el;
 }
 
 
 // ─── STEP 3: ŠKODY ─────────────────────────────────────────
-async function goStep3() { setStep(3);
+async function goStep3() {
   setStep(3);
-  await botMsg('Tady jsou všechny škody, které jsme zaznamenali. Zkontrolujte je a případně upravte.', 1100);
 
   const card = document.createElement('div');
-  const list = document.createElement('div');
-  list.className = 'damage-list'; list.id = 'dmgList';
-  renderDmgItems(list);
-  card.appendChild(list);
-  await botCard(card, 400);
+  card.className = 'ai-result-card';
+  card.innerHTML = `
+    <div class="analysis-info">
+      <span class="analysis-info__icon">${ICO.ai}</span>
+      <span>AI analýza dokončena. Zkontrolujte nalezená poškození.</span>
+    </div>
 
-  setBar(`
-    <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg">${ICO.plus} Přidat další škodu</button>
-    <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg">Potvrdit seznam</button>
-    ${liqRowHtml()}
-  `);
-  document.getElementById('btnMoreDmg').addEventListener('click', () => step3_add());
-  document.getElementById('btnConfirmDmg').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
-  bindLiqBtn();
+    <div class="result-card">
+      <div class="result-card__title">Co jsme našli na fotce</div>
+      <div class="found-dmg-list" id="dmgList"></div>
+      <button type="button" class="btn-add-dmg" id="btnAddDmgCard">${ICO.plus} Přidat poškození</button>
+    </div>
+
+    <div class="asset-section">
+      <div>
+        <div class="asset-section__title">Doplňte informace o poškozené věci</div>
+        <div class="asset-section__helper">Stačí značka, typ a přibližný rozměr. Pokud nevíte přesně, napište odhad.</div>
+      </div>
+      <div class="voice-wrap asset-voice-wrap">
+        <textarea class="input-field" id="assetDetails" placeholder="Seznam a rozměr" maxlength="1000">${escapeHtml(S.assetDetails)}</textarea>
+        <button type="button" class="voice-btn" id="btnAssetVoice" aria-controls="assetDetails" aria-label="Nadiktovat seznam a rozměr poškozeného majetku">
+          ${ICO.mic}
+          <span id="assetVoiceLabel">Namluvit</span>
+        </button>
+        <span class="textarea-counter" id="assetDetailsCounter">0 / 1000 znaků</span>
+      </div>
+      <div class="voice-status" id="assetVoiceStatus" aria-live="polite"></div>
+      <div class="bar-hint" style="text-align:left">Např. „Sklokeramická deska Mora, cca 60 × 52 cm.“</div>
+    </div>
+  `;
+
+  renderDmgItems(card.querySelector('#dmgList'));
+  const wrap = await botCard(card, 400);
+  wrap.parentElement?.classList.add('msg--wide');
+  document.getElementById('btnAddDmgCard')?.addEventListener('click', () => step3_add());
+  setupAssetDetailsInput();
+  setStep3Bar();
+  scrollBot();
+}
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value ?? '';
+  return div.innerHTML;
+}
+
+function damageIconSvg() {
+  return `<svg class="found-dmg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h4M18 10h.01M6 14h12"/></svg>`;
 }
 
 function renderDmgItems(list) {
+  if (!list) return;
   list.innerHTML = '';
   S.damages.forEach(d => {
     const row = document.createElement('div');
-    row.className = 'dmg-item'; row.id = `dr-${d.id}`;
+    row.className = 'found-dmg-item';
+    row.id = `dr-${d.id}`;
     row.innerHTML = `
-      <span class="tag ${d.added ? 'tag--grey' : 'tag--gdef'}">${d.added ? 'Přidáno' : 'AI'}</span>
-      <span class="dmg-item__text">${d.text}</span>
-      <button class="dmg-item__del" data-id="${d.id}">${ICO.xmark}</button>
+      ${damageIconSvg()}
+      <div class="found-dmg-texts">
+        <div class="found-dmg-name"></div>
+        <div class="found-dmg-sub"></div>
+      </div>
+      <button type="button" class="found-dmg-edit" aria-label="Upravit poškození">${ICO.pencil}</button>
     `;
+    row.querySelector('.found-dmg-name').textContent = d.text;
+    const sub = row.querySelector('.found-dmg-sub');
+    sub.textContent = d.sub || (d.added ? 'Ručně přidáno — čeká na posouzení' : 'AI detekováno z fotodokumentace');
+    row.querySelector('.found-dmg-edit').addEventListener('click', () => step3_edit(d.id));
     list.appendChild(row);
   });
-  list.onclick = e => {
-    const btn = e.target.closest('.dmg-item__del');
-    if (!btn) return;
-    const id = parseInt(btn.dataset.id);
-    S.damages = S.damages.filter(d => d.id !== id);
-    document.getElementById(`dr-${id}`)?.remove();
+}
+
+function updateAssetCounter() {
+  const textarea = document.getElementById('assetDetails');
+  const counter = document.getElementById('assetDetailsCounter');
+  if (!textarea || !counter) return;
+  const max = Number(textarea.getAttribute('maxlength')) || 1000;
+  if (textarea.value.length > max) textarea.value = textarea.value.slice(0, max);
+  counter.textContent = `${textarea.value.length} / ${max} znaků`;
+}
+
+function resizeAssetTextarea() {
+  const textarea = document.getElementById('assetDetails');
+  if (!textarea) return;
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(Math.max(textarea.scrollHeight, 96), 160) + 'px';
+}
+
+function setupAssetDetailsInput() {
+  const textarea = document.getElementById('assetDetails');
+  if (!textarea) return;
+  const sync = () => {
+    S.assetDetails = textarea.value;
+    updateAssetCounter();
+    resizeAssetTextarea();
+    updateChatPadding();
   };
+  textarea.addEventListener('input', sync);
+  document.getElementById('btnAssetVoice')?.addEventListener('click', () => startAssetVoiceInput(sync));
+  sync();
+}
+
+let assetVoiceTimer;
+function startAssetVoiceInput(onDone) {
+  const textarea = document.getElementById('assetDetails');
+  const btn = document.getElementById('btnAssetVoice');
+  const label = document.getElementById('assetVoiceLabel');
+  const status = document.getElementById('assetVoiceStatus');
+  if (!textarea || !btn || !label || !status || btn.classList.contains('listening')) return;
+
+  clearTimeout(assetVoiceTimer);
+  btn.classList.add('listening');
+  btn.setAttribute('aria-label', 'Probíhá diktování seznamu a rozměru poškozeného majetku');
+  label.textContent = 'Poslouchám…';
+  status.textContent = 'Simulace diktování je spuštěná.';
+  updateChatPadding();
+
+  assetVoiceTimer = setTimeout(() => {
+    const dictatedText = 'Je to sklokeramická deska Mora, klasická šířka asi 60 centimetrů, prasklá u pravé přední plotýnky.';
+    const nextValue = textarea.value.trim() ? `${textarea.value.trim()} ${dictatedText}` : dictatedText;
+    const max = Number(textarea.getAttribute('maxlength')) || 1000;
+    textarea.value = nextValue.slice(0, max);
+
+    btn.classList.remove('listening');
+    btn.setAttribute('aria-label', 'Nadiktovat seznam a rozměr poškozeného majetku');
+    label.textContent = 'Namluvit';
+    status.textContent = 'Text byl doplněn z hlasového zadání.';
+    if (typeof onDone === 'function') onDone();
+    textarea.focus();
+    scrollBot();
+  }, 1200);
+}
+
+function setStep3Bar() {
+  setBar(`
+    <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg">${ICO.plus} Přidat poškození</button>
+    <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg">Potvrdit a pokračovat</button>
+  `);
+  document.getElementById('btnMoreDmg')?.addEventListener('click', () => step3_add());
+  document.getElementById('btnConfirmDmg')?.addEventListener('click', async () => {
+    const textarea = document.getElementById('assetDetails');
+    if (textarea) S.assetDetails = textarea.value.trim();
+    clearBar();
+    userMsg('Potvrdit a pokračovat');
+    await goStep4();
+  });
 }
 
 function step3_add() {
+  openDamageForm();
+}
+
+function step3_edit(id) {
+  const damage = S.damages.find(d => d.id === id);
+  if (damage) openDamageForm(damage);
+}
+
+function openDamageForm(damage = null) {
+  const isEdit = Boolean(damage);
   setBar(`
-    <div class="float-wrap"><input class="input-field" type="text" id="inAdd3" placeholder=" "><label class="float-label" for="inAdd3">Popis škody</label></div>
+    <div class="float-wrap"><input class="input-field" type="text" id="inDamageName" placeholder=" "><label class="float-label" for="inDamageName">Název poškození</label></div>
+    <textarea class="input-field" id="inDamageSub" placeholder="Detail, rozsah nebo rozměr" rows="2"></textarea>
     <div class="bar-row">
-      <button class="btn btn--lg btn--primary" style="flex:1" id="btnSubmit3">Přidat</button>
-      <button class="btn btn--lg btn--secondary" id="btnCancel3">Zpět</button>
+      <button class="btn btn--lg btn--primary" style="flex:1" id="btnSaveDamage">${isEdit ? 'Uložit' : 'Přidat'}</button>
+      <button class="btn btn--lg btn--secondary" id="btnCancelDamage">Zpět</button>
     </div>
-    ${liqRowHtml()}
   `);
-  setupFloat(document.getElementById('inAdd3'));
-  document.getElementById('btnSubmit3').addEventListener('click', () => {
-    const txt = document.getElementById('inAdd3').value.trim();
-    if (!txt) return;
-    const d = {id:S.nextId++, text:txt, covered:false, amount:0, added:true};
-    S.damages.push(d);
-    const list = document.getElementById('dmgList');
-    if (list) renderDmgItems(list);
-    setBar(`
-      <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg2">${ICO.plus} Přidat další škodu</button>
-      <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg2">Potvrdit seznam</button>
-      ${liqRowHtml()}
-    `);
-    document.getElementById('btnMoreDmg2').addEventListener('click', () => step3_add());
-    document.getElementById('btnConfirmDmg2').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
-    bindLiqBtn();
+
+  const nameInput = document.getElementById('inDamageName');
+  const subInput = document.getElementById('inDamageSub');
+  nameInput.value = damage?.text || '';
+  subInput.value = damage?.sub || '';
+  setupFloat(nameInput);
+  subInput.addEventListener('input', () => { subInput.style.height = 'auto'; subInput.style.height = Math.min(subInput.scrollHeight, 120) + 'px'; });
+  subInput.dispatchEvent(new Event('input'));
+
+  document.getElementById('btnSaveDamage').addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const sub = subInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+
+    if (damage) {
+      damage.text = name;
+      damage.sub = sub;
+    } else {
+      S.damages.push({ id: S.nextId++, text: name, sub, covered: null, amount: 0, added: true });
+    }
+
+    renderDmgItems(document.getElementById('dmgList'));
+    setStep3Bar();
   });
-  document.getElementById('btnCancel3').addEventListener('click', () => {
-    setBar(`
-      <button class="btn btn--md btn--secondary btn--full" id="btnMoreDmg3">${ICO.plus} Přidat další škodu</button>
-      <button class="btn btn--lg btn--primary btn--full" id="btnConfirmDmg3">Potvrdit seznam</button>
-      ${liqRowHtml()}
-    `);
-    document.getElementById('btnMoreDmg3').addEventListener('click', () => step3_add());
-    document.getElementById('btnConfirmDmg3').addEventListener('click', async () => { clearBar(); userMsg('Seznam potvrzen'); await goStep4(); });
-    bindLiqBtn();
-  });
-  bindLiqBtn();
+
+  document.getElementById('btnCancelDamage').addEventListener('click', () => setStep3Bar());
 }
 
 // ─── STEP 4: KRYTÍ ─────────────────────────────────────────
 async function goStep4() {
   setStep(4);
-  await botMsg('Prověřili jsme vaše pojistné podmínky. Tady je přehled krytí:', 1400);
+  await botMsg('Prověřili jsme vaše pojistné podmínky. Tady je přehled škod:', 1400);
 
   const covCard = document.createElement('div');
-  const rows = S.damages.map(d => {
-    const why = !d.covered ? `<button class="why-btn" onclick="showRejectionSheet('${d.text.replace(/'/g,"\\'")}')">Proč?</button>` : '';
-    return `<div class="cov-row">
-      <span class="cov-row__text">${d.text}</span>
-      <div class="cov-row__actions">
-        <span class="tag ${d.covered ? 'tag--success' : 'tag--error'}">${d.covered ? '✓ Kryto' : '✕ Nekryto'}</span>
-        ${why}
-      </div>
-    </div>`;
-  }).join('');
-  covCard.innerHTML = `<div class="coverage-list">${rows}</div>`;
-  await botCard(covCard, 300);
+  covCard.className = 'coverage-summary';
 
-  const rejected = S.damages.filter(d => !d.covered);
+  const covered = S.damages.filter(d => d.covered === true);
+  const uncovered = S.damages.filter(d => d.covered === false);
+  const pending = S.damages.filter(d => d.covered === null || d.covered === undefined);
 
-  if (rejected.length > 0) {
-    await sleep(300);
-    setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnToPayout">Pokračovat na výplatu</button>${liqRowHtml()}`);
-    document.getElementById('btnToPayout').addEventListener('click', async () => { clearBar(); userMsg('Pokračovat na výplatu'); await goStep5(); });
-    bindLiqBtn();
-  } else {
-    setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnToPayout2">Pokračovat na výplatu</button>${liqRowHtml()}`);
-    document.getElementById('btnToPayout2').addEventListener('click', async () => { clearBar(); userMsg('Pokračovat na výplatu'); await goStep5(); });
-    bindLiqBtn();
+  if (covered.length) covCard.appendChild(createCoverageSection('Pojištěné škody', covered, 'covered'));
+  if (uncovered.length) covCard.appendChild(createCoverageSection('Nepojištěné škody', uncovered, 'uncovered'));
+  if (pending.length) covCard.appendChild(createCoverageSection('Čeká na posouzení', pending, 'pending'));
+
+  const wrap = await botCard(covCard, 300);
+  wrap.parentElement?.classList.add('msg--wide');
+  scrollBot();
+
+  setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnToPayout">Pokračovat</button>${liqRowHtml()}`);
+  document.getElementById('btnToPayout').addEventListener('click', async () => {
+    clearBar();
+    userMsg('Pokračovat');
+    await goStep5();
+  });
+  bindLiqBtn();
+}
+
+function createCoverageSection(title, items, type) {
+  const section = document.createElement('div');
+  section.className = 'coverage-section';
+
+  const ttl = document.createElement('div');
+  ttl.className = 'coverage-section__title';
+  ttl.textContent = title;
+  section.appendChild(ttl);
+
+  const card = document.createElement('div');
+  card.className = 'coverage-card';
+  items.forEach(d => card.appendChild(createCoverageItem(d, type)));
+  section.appendChild(card);
+
+  return section;
+}
+
+function createCoverageItem(d, type) {
+  const row = document.createElement('div');
+  row.className = 'coverage-item';
+
+  const iconWrap = document.createElement('div');
+  iconWrap.innerHTML = type === 'covered' ? ICO.covCheck : (type === 'uncovered' ? ICO.covCross : ICO.covClock);
+  row.appendChild(iconWrap.firstElementChild);
+
+  const texts = document.createElement('div');
+  texts.className = 'coverage-texts';
+
+  const name = document.createElement('div');
+  name.className = 'coverage-name';
+  name.textContent = d.text;
+  texts.appendChild(name);
+
+  const sub = document.createElement('div');
+  sub.className = 'coverage-sub';
+  sub.textContent = coverageSubText(d, type);
+  texts.appendChild(sub);
+
+  if (type === 'uncovered') {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'coverage-more';
+    more.textContent = 'Chci vědět více';
+    more.addEventListener('click', () => showRejectionSheet(d.text));
+    texts.appendChild(more);
   }
+
+  row.appendChild(texts);
+  return row;
+}
+
+function coverageSubText(d, type) {
+  if (type === 'covered') return d.sub || 'Živelní škoda — součást pojistky';
+  if (type === 'uncovered') return d.sub || 'Opotřebení — mimo rozsah pojistky';
+  return d.sub || 'Ručně přidáno — čeká na posouzení';
 }
 
 // ─── STEP 5: ZÁVĚR ─────────────────────────────────────────
