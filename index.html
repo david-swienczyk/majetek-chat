@@ -56,6 +56,7 @@ img{display:block;max-width:100%}
 /* === MESSAGES === */
 .msg{display:flex;gap:8px;animation:msg-in 300ms cubic-bezier(.34,1.56,.64,1) both}
 .msg--bot{align-items:flex-end;align-self:flex-start;max-width:88%}
+.msg--bot.msg--wide{max-width:100%}
 .msg--user{align-self:flex-end;flex-direction:row-reverse;max-width:80%}
 .msg__avatar{width:32px;height:32px;border-radius:50%;background:var(--gd-bg);display:flex;align-items:center;justify-content:center;color:#C4DE00;flex-shrink:0}
 .msg__bubble{background:#fff;border-radius:16px 16px 16px 4px;padding:12px 16px;box-shadow:var(--shadow-menu);font-size:14px;line-height:1.5;color:var(--gd-bg)}
@@ -79,6 +80,7 @@ img{display:block;max-width:100%}
 .btn--tertiary{background:transparent;color:#004033;text-decoration:underline}
 .btn--tertiary:hover{text-decoration:none}
 .btn--full{width:100%}
+.btn:disabled{cursor:not-allowed;background:var(--dis-bg);color:var(--dis-content);box-shadow:none;border-color:var(--dis-bg);opacity:1}
 
 /* === INPUTS === */
 .float-wrap{position:relative;width:100%;min-width:0}
@@ -138,6 +140,33 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .upload-thumb img{width:100%;height:100%;object-fit:cover}
 .upload-overlay{position:absolute;inset:0;background:rgba(249,252,226,.92);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 .upload-overlay__text{font-size:13px;font-weight:500;color:var(--gd-bg)}
+.media-doc{display:flex;flex-direction:column;gap:16px}
+.media-info{background:var(--gl-bg);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;color:var(--gd-bg);font-size:13px;line-height:1.45}
+.media-info__icon{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+.media-info__icon svg{width:18px;height:18px}
+.media-group{display:flex;flex-direction:column;gap:8px}
+.media-head{padding:0 2px}
+.media-title{font-size:16px;font-weight:600;color:var(--gd-bg);line-height:1.3;margin-bottom:4px}
+.media-helper{font-size:13px;color:var(--light-helper);line-height:1.4}
+.media-zone{border:2px dashed var(--light-outline);border-radius:14px;min-height:104px;padding:16px;display:flex;align-items:center;gap:16px;background:var(--grey-25);cursor:pointer;text-align:left;transition:background .15s,border-color .15s}
+.media-zone:hover,.media-zone:active{background:var(--light-bg);border-color:var(--light-forms-outline)}
+.media-zone__icon{width:36px;height:36px;color:var(--light-helper);flex-shrink:0}
+.media-zone__icon svg{width:36px;height:36px;display:block}
+.media-zone__copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.media-zone__text{font-size:15px;font-weight:600;color:var(--gd-bg);line-height:1.3}
+.media-zone__sub{font-size:12px;color:var(--light-helper);line-height:1.35}
+.media-section{display:none}
+.media-section.visible{display:block}
+.media-badge{display:inline-flex;align-items:center;gap:6px;background:var(--light-bg);color:var(--gd-bg);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;margin-bottom:10px}
+.media-badge svg{width:14px;height:14px}
+.media-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.media-thumb{width:72px;height:72px;border-radius:12px;overflow:hidden;position:relative;background:var(--grey-100);flex:0 0 72px}
+.media-thumb img,.media-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.media-video-badge{position:absolute;left:6px;bottom:6px;border-radius:14px;padding:3px 7px;background:rgba(0,64,51,.78);color:#fff;font-size:10px;font-weight:700;line-height:1}
+.media-thumb__rm{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;border:none;cursor:pointer}
+.media-add{display:inline-flex;align-items:center;gap:8px;color:var(--gd-bg);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:4px 0;border:none;background:none;cursor:pointer}
+.media-add:hover{text-decoration:none}
+.file-hidden{display:none}
 
 /* === DAMAGE LIST === */
 .damage-list{display:flex;flex-direction:column;gap:8px}
@@ -290,6 +319,7 @@ const ICO = {
   check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`,
   xmark: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
   cloudUp: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V9m0 0l-3 3m3-3l3 3"/><path d="M7.2 18.8A6 6 0 013.4 13a6 6 0 016-6 8 8 0 0115.2 2 6 6 0 010 12H7.2z"/></svg>`,
+  camera: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="40" height="30" rx="6"/><circle cx="24" cy="26" r="8"/><path d="M16 10l3.5-6h9l3.5 6" stroke-linecap="round"/><circle cx="38" cy="17" r="2.5" fill="currentColor" stroke="none"/></svg>`,
   ai: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 3.5L17 8l-3.5 1.5L12 13l-1.5-3.5L7 8l3.5-1.5L12 3z"/><path d="M18.5 14l.75 1.75L21 16.5l-1.75.75L18.5 19l-.75-1.75L16 16.5l1.75-.75z"/></svg>`,
   plus: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
   warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"/></svg>`,
@@ -330,7 +360,7 @@ let progressCount = 0;
 const S = {
   step: 1, damages: JSON.parse(JSON.stringify(BASE_DAMAGES)),
   nextId: 10, rating: 0, account: FAKE_IBAN,
-  pendingFiles: [], // files selected but not yet analyzed
+  mediaFiles: { detail: [], overall: [] },
 };
 
 function setStep(n) { S.step = n; }
@@ -869,104 +899,164 @@ async function step1_address() {
 // ─── STEP 2: FOTOGRAFIE ────────────────────────────────────
 async function goStep2() {
   setStep(2);
-  await botMsg('Popis jsme zaznamenali. Přiložte prosím fotografie nebo video z místa události — AI je automaticky vyhodnotí.', 1400);
+  S.mediaFiles = { detail: [], overall: [] };
+  await botMsg('Popis jsme zaznamenali. Přidejte prosím detailní i celkový pohled na škodu — AI potom fotky a videa vyhodnotí.', 1400);
 
   const uploadEl = document.createElement('div');
-  uploadEl.id = 'uploadCard';
-  uploadEl.className = 'upload-card';
+  uploadEl.className = 'media-doc';
   uploadEl.innerHTML = `
-    <div style="display:flex;justify-content:center;color:var(--gd-bg);margin-bottom:10px">${ICO.cloudUp}</div>
-    <div class="upload-card__title">Přetáhněte soubory sem</div>
-    <div class="upload-card__sub">nebo</div>
-    <button class="btn btn--md btn--secondary" id="btnPickFiles" type="button" style="margin:0 auto;display:flex">Vybrat soubory</button>
-    <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none">
-    <div class="upload-thumbs" id="upThumbs"></div>
-    <div id="upAddMore" style="margin-top:10px"></div>
-    <div id="upOverlay" style="display:none" class="upload-overlay"><div style="color:var(--gd-bg);animation:pulse 1.2s ease infinite">${ICO.ai}</div><div class="upload-overlay__text">Analyzuji nahrané soubory…</div></div>
-    <div id="upProgress" style="display:none;margin-top:10px;background:var(--grey-100);border-radius:100px;height:5px;overflow:hidden"><div id="upBar" style="height:100%;width:0%;background:var(--gdef-bg);border-radius:100px;transition:width 2.5s ease-out"></div></div>
+    <div class="media-info">
+      <span class="media-info__icon">${ICO.warning}</span>
+      <span>Přidejte detailní i celkový pohled na škodu. Může jít o foto nebo video — důležité je zachytit detail poškození i širší kontext.</span>
+    </div>
+
+    ${mediaUploadSectionHtml('detail', 'Detailní pohled *', 'Zachyťte prasklinu, poškozenou část nebo konkrétní místo škody.')}
+    ${mediaUploadSectionHtml('overall', 'Celkový pohled *', 'Zachyťte celou poškozenou věc a její okolí, aby byl jasný rozsah škody.')}
   `;
 
-  await botCard(uploadEl, 400);
-
-  document.getElementById('btnPickFiles').addEventListener('click', () => document.getElementById('fileInput').click());
-  document.getElementById('fileInput').addEventListener('change', e => addFiles(e.target.files));
-
-  const card = document.getElementById('uploadCard');
-  card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-  card.addEventListener('drop', e => { e.preventDefault(); card.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
+  const uploadWrap = await botCard(uploadEl, 400);
+  uploadWrap.parentElement?.classList.add('msg--wide');
+  scrollBot();
+  bindMediaUploadSection('detail');
+  bindMediaUploadSection('overall');
 
   setBar(`
-    <div class="bar-hint">Nahrajte fotografii pro přesnější posouzení</div>
-    <button class="btn btn--md btn--tertiary btn--full" id="btnSkip">Přeskočit nahrávání</button>
+    <div class="bar-hint" id="mediaHint">Nahrajte detailní i celkový pohled na škodu</div>
+    <button class="btn btn--lg btn--primary btn--full" id="btnMediaContinue" disabled>Pokračovat</button>
   `);
-  document.getElementById('btnSkip').addEventListener('click', async () => { clearBar(); userMsg('Přeskočit nahrávání'); await step2_result(0); });
-}
-
-async function addFiles(files) {
-  if (!files || files.length === 0) return;
-  const arr = Array.from(files).slice(0, 6 - S.pendingFiles.length);
-  S.pendingFiles.push(...arr);
-
-  const thumbsEl = document.getElementById('upThumbs');
-
-  for (const f of arr) {
-    const thumb = document.createElement('div');
-    thumb.className = 'upload-thumb';
-    if (f.type.startsWith('image/')) {
-      await new Promise(res => {
-        const r = new FileReader();
-        r.onload = e => { thumb.innerHTML = `<img src="${e.target.result}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`; res(); };
-        r.readAsDataURL(f);
-      });
-    } else {
-      thumb.innerHTML = `<span style="font-size:11px;font-weight:500;text-align:center">${ICO.phone}<br>video</span>`;
-    }
-    thumbsEl.appendChild(thumb);
-  }
-
-  // hide original pick button, show inline "add more" in card
-  const pickBtn = document.getElementById('btnPickFiles');
-  if (pickBtn) pickBtn.style.display = 'none';
-
-  const addMoreEl = document.getElementById('upAddMore');
-  if (addMoreEl) {
-    const n = S.pendingFiles.length;
-    const label = `${n} soubor${n > 1 ? (n < 5 ? 'y' : 'ů') : ''}`;
-    addMoreEl.innerHTML = `<button class="btn btn--md btn--secondary" id="btnAddMore" type="button" style="margin:0 auto;display:flex">${ICO.plus} Přidat další</button>`;
-    document.getElementById('btnAddMore').addEventListener('click', () => {
-      const fi = document.getElementById('fileInput');
-      if (fi) fi.click();
-    });
-  }
-
-  setBar(`
-    <div class="bar-hint">Vybráno: ${S.pendingFiles.length} soubor${S.pendingFiles.length > 1 ? (S.pendingFiles.length < 5 ? 'y' : 'ů') : ''}</div>
-    <button class="btn btn--lg btn--primary btn--full" id="btnAnalyze">Analyzovat</button>
-  `);
-  document.getElementById('btnAnalyze').addEventListener('click', async () => {
+  document.getElementById('btnMediaContinue').addEventListener('click', async () => {
+    if (!validateMediaStep()) return;
     clearBar();
     await runAnalysis();
   });
+  validateMediaStep();
+}
+
+function mediaUploadSectionHtml(section, title, helper) {
+  return `
+    <div class="media-group" data-media-section="${section}">
+      <div class="media-head">
+        <p class="media-title">${title}</p>
+        <p class="media-helper">${helper}</p>
+      </div>
+      <button type="button" class="media-zone" id="mediaZone-${section}" aria-label="Přidat foto nebo video — ${title.replace(' *', '')}">
+        <span class="media-zone__icon">${ICO.camera}</span>
+        <span class="media-zone__copy">
+          <span class="media-zone__text">Přidat foto nebo video</span>
+          <span class="media-zone__sub">JPG, PNG, HEIC, MP4, MOV</span>
+        </span>
+      </button>
+      <div class="media-section" id="mediaSection-${section}">
+        <div class="media-badge">
+          ${ICO.camera}
+          <span id="mediaCount-${section}">0 souborů</span>
+        </div>
+        <div class="media-grid" id="mediaGrid-${section}"></div>
+        <button type="button" class="media-add" id="mediaAdd-${section}">${ICO.plus} Přidat další foto/video</button>
+      </div>
+      <input type="file" id="mediaInput-${section}" class="file-hidden" accept="image/*,video/*" capture="environment">
+      <input type="file" id="mediaInputMore-${section}" class="file-hidden" accept="image/*,video/*" capture="environment" multiple>
+    </div>
+  `;
+}
+
+function bindMediaUploadSection(section) {
+  const zone = document.getElementById(`mediaZone-${section}`);
+  const add = document.getElementById(`mediaAdd-${section}`);
+  const input = document.getElementById(`mediaInput-${section}`);
+  const inputMore = document.getElementById(`mediaInputMore-${section}`);
+
+  if (zone && input) zone.addEventListener('click', () => input.click());
+  if (add && inputMore) add.addEventListener('click', () => inputMore.click());
+  if (input) input.addEventListener('change', () => handleMedia(input, section));
+  if (inputMore) inputMore.addEventListener('change', () => handleMedia(inputMore, section));
+}
+
+async function handleMedia(input, section) {
+  const files = Array.from(input.files || []);
+  if (!files.length || !S.mediaFiles[section]) return;
+
+  for (const file of files) {
+    await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        S.mediaFiles[section].push({
+          src: e.target.result,
+          type: file.type || '',
+          name: file.name || ''
+        });
+        resolve();
+      };
+      reader.onerror = resolve;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  input.value = '';
+  renderMediaSection(section);
+}
+
+function mediaCountLabel(count) {
+  if (count === 1) return '1 soubor';
+  if (count >= 2 && count <= 4) return `${count} soubory`;
+  return `${count} souborů`;
+}
+
+function renderMediaSection(section) {
+  const files = S.mediaFiles[section] || [];
+  const grid = document.getElementById(`mediaGrid-${section}`);
+  const uploadSection = document.getElementById(`mediaSection-${section}`);
+  const zone = document.getElementById(`mediaZone-${section}`);
+  const label = document.getElementById(`mediaCount-${section}`);
+  if (!grid || !uploadSection || !zone || !label) return;
+
+  uploadSection.classList.toggle('visible', files.length > 0);
+  zone.style.display = files.length > 0 ? 'none' : 'flex';
+  label.textContent = mediaCountLabel(files.length);
+  grid.innerHTML = '';
+
+  files.forEach((file, index) => {
+    const isVideo = file.type.startsWith('video/');
+    const thumb = document.createElement('div');
+    thumb.className = 'media-thumb';
+    thumb.innerHTML = isVideo
+      ? `<video src="${file.src}" muted playsinline preload="metadata"></video><span class="media-video-badge">▶ VIDEO</span><button type="button" class="media-thumb__rm" aria-label="Odebrat video">✕</button>`
+      : `<img src="${file.src}" alt=""><button type="button" class="media-thumb__rm" aria-label="Odebrat foto">✕</button>`;
+    thumb.querySelector('.media-thumb__rm').addEventListener('click', () => removeMedia(section, index));
+    grid.appendChild(thumb);
+  });
+
+  validateMediaStep();
+  scrollBot();
+}
+
+function validateMediaStep() {
+  const hasDetail = (S.mediaFiles.detail || []).length > 0;
+  const hasOverall = (S.mediaFiles.overall || []).length > 0;
+  const ok = hasDetail && hasOverall;
+  const btn = document.getElementById('btnMediaContinue');
+  const hint = document.getElementById('mediaHint');
+  if (btn) btn.disabled = !ok;
+  if (hint) {
+    hint.textContent = ok
+      ? 'Fotodokumentace je připravená k analýze'
+      : `Chybí: ${[!hasDetail ? 'detailní pohled' : '', !hasOverall ? 'celkový pohled' : ''].filter(Boolean).join(' a ')}`;
+  }
+  return ok;
+}
+
+function removeMedia(section, index) {
+  if (!S.mediaFiles[section]) return;
+  S.mediaFiles[section].splice(index, 1);
+  renderMediaSection(section);
 }
 
 async function runAnalysis() {
-  const count = S.pendingFiles.length;
-  const ov = document.getElementById('upOverlay');
-  const prog = document.getElementById('upProgress');
-  const bar2 = document.getElementById('upBar');
-  if (ov) ov.style.display = 'flex';
-  if (prog) prog.style.display = 'block';
-  await sleep(80);
-  if (bar2) bar2.style.width = '100%';
-  await sleep(2900);
-  if (ov) ov.style.display = 'none';
-  await step2_result(count);
-}
-
-async function step2_result(count) {
-  userMsg(count > 0 ? `${count} soubor${count>1?(count<5?'y':'ů'):''}` : 'Přeskočeno');
-  await botMsg(count > 0 ? 'Soubory jsme zpracovali.' : 'Pokračujeme bez fotodokumentace.', 1200);
+  const count = S.mediaFiles.detail.length + S.mediaFiles.overall.length;
+  userMsg(`Fotodokumentace přiložena (${mediaCountLabel(count)})`);
+  await botMsg('Analyzujeme poškození…', 500);
+  await sleep(2300);
+  await botMsg('AI analýza dokončena.', 700);
   await goStep3();
 }
 
