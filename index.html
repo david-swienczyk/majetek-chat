@@ -279,6 +279,32 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .fin-account__num{font-size:12px;font-weight:500;color:var(--gd-bg);flex:1}
 .fin-account__change{font-size:12px;font-weight:600;color:var(--light-content-sec);text-decoration:underline;cursor:pointer;border:none;background:none;white-space:nowrap}
 .fin-card__footer{background:var(--gl-bg);padding:10px 16px;font-size:12px;font-weight:600;color:var(--gd-bg);display:flex;align-items:center;gap:6px}
+.payout-summary{display:flex;flex-direction:column;gap:14px}
+.payout-card{border:1px solid var(--grey-50);border-radius:14px;background:#fff;padding:10px 16px}
+.payout-card__title{font-size:11px;font-weight:700;color:var(--light-helper);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.payout-item{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:8px 0;border-bottom:1px solid var(--grey-50)}
+.payout-item:last-of-type{border-bottom:none}
+.payout-name{font-size:15px;font-weight:500;color:var(--gd-bg);line-height:1.3}
+.payout-sub{font-size:13px;color:var(--light-helper);line-height:1.35;margin-top:3px}
+.payout-amount{font-size:15px;font-weight:600;color:var(--gd-bg);white-space:nowrap;padding-top:2px}
+.payout-amount--neg{color:var(--error-bg)}
+.payout-divider{height:1px;background:var(--grey-50);margin:0}
+.payout-total{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0 2px}
+.payout-total__label{font-size:16px;font-weight:700;color:var(--gd-bg)}
+.payout-total__amount{font-size:22px;font-weight:700;color:var(--gd-bg);white-space:nowrap}
+.account-title{font-size:15px;font-weight:600;color:var(--gd-bg);line-height:1.3;margin-bottom:6px}
+.account-block{background:var(--grey-25);border-radius:14px;padding:16px}
+.account-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.account-lbl{font-size:12px;color:var(--light-helper);line-height:1.35;margin-bottom:3px}
+.account-num{font-size:18px;font-weight:600;color:var(--gd-bg);line-height:1.25}
+.account-change{font-size:14px;font-weight:600;color:var(--gd-bg);text-decoration:underline;text-underline-offset:2px;background:none;border:none;cursor:pointer;flex-shrink:0}
+.account-change:hover{text-decoration:none}
+.account-edit{display:none;margin-top:12px}
+.account-edit.open{display:block}
+.account-edit .input-field{height:56px;padding:0 14px;border-radius:14px}
+.instant-box{background:var(--gl-bg);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;color:var(--gd-bg)}
+.instant-box__icon{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+.instant-box__text{font-size:14px;line-height:1.45}
 
 /* === SUCCESS CARD === */
 .success-card{text-align:center;padding:20px 12px}
@@ -1442,14 +1468,14 @@ function coverageSubText(d, type) {
   return d.sub || 'Ručně přidáno — čeká na posouzení';
 }
 
-function createHelperBox(id) {
+function createHelperBox(id, title = 'Potřebujete rychlou pomoc?') {
   const el = document.createElement('div');
   el.className = 'helper-block';
   el.id = id;
   el.innerHTML = `
     <button type="button" class="helper-trigger" aria-expanded="false">
       <span class="helper-ico">${ICO.phone}</span>
-      <span class="helper-title">Potřebujete rychlou pomoc?</span>
+      <span class="helper-title">${title}</span>
       <svg class="helper-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -1522,61 +1548,111 @@ function toggleHelperBox(id) {
 // ─── STEP 5: ZÁVĚR ─────────────────────────────────────────
 async function goStep5() {
   setStep(5);
-  await botMsg('Vaši žádost rovnou likvidujeme – není třeba čekat. Zkontrolujte prosím výplatní účet:', 1300);
+  await botMsg('Nárok jsme spočítali. Zkontrolujte částku a účet pro výplatu.', 1300);
 
-  const covered = S.damages.filter(d => d.covered);
-  const gross = covered.reduce((s,d) => s+d.amount, 0);
+  const covered = S.damages.filter(d => d.covered === true);
+  const gross = covered.reduce((sum, d) => sum + d.amount, 0);
   const net = gross - DEDUCTIBLE;
 
-  const fc = document.createElement('div');
-  fc.className = 'fin-card';
-  fc.innerHTML = `
-    <div class="fin-card__header">
-      <div><div class="fin-card__label">Částka k vyplacení</div></div>
-      <div style="text-align:right">
-        <div class="fin-card__gross">${gross.toLocaleString('cs-CZ')} Kč</div>
-        <div class="fin-card__period">hrubá částka</div>
+  const payout = document.createElement('div');
+  payout.className = 'payout-summary';
+  payout.innerHTML = `
+    <div class="payout-card">
+      <div class="payout-card__title">Rozpis plnění</div>
+      <div class="payout-item">
+        <div>
+          <div class="payout-name">Škoda celkem</div>
+          <div class="payout-sub">${payoutDamageSub(covered)}</div>
+        </div>
+        <span class="payout-amount">${gross.toLocaleString('cs-CZ')} Kč</span>
+      </div>
+      <div class="payout-item">
+        <div>
+          <div class="payout-name">Spoluúčast</div>
+          <div class="payout-sub">(tuto část škody platíte vy)</div>
+        </div>
+        <span class="payout-amount payout-amount--neg">−${DEDUCTIBLE.toLocaleString('cs-CZ')} Kč</span>
+      </div>
+      <div class="payout-divider"></div>
+      <div class="payout-total">
+        <span class="payout-total__label">Celkem</span>
+        <span class="payout-total__amount" id="payoutTotal">${net.toLocaleString('cs-CZ')} Kč</span>
       </div>
     </div>
-    <div class="fin-card__body">
-      ${covered.map(d=>`<div class="fin-row"><span class="fin-row__label">${d.text}</span><span class="fin-row__amount">${d.amount.toLocaleString('cs-CZ')} Kč</span></div>`).join('')}
-      <div class="fin-row fin-row--deductible"><span class="fin-row__label">Spoluúčast</span><span class="fin-row__amount">− ${DEDUCTIBLE.toLocaleString('cs-CZ')} Kč</span></div>
-      <div class="fin-row fin-row--total"><span class="fin-row__label">K výplatě</span><span class="fin-row__amount">${net.toLocaleString('cs-CZ')} Kč</span></div>
+
+    <div id="payoutHelperMount"></div>
+
+    <div>
+      <div class="account-title">Platební účet</div>
+      <div class="account-block" id="accountSection">
+        <div class="account-row">
+          <div>
+            <div class="account-lbl">Číslo účtu (na který jsme od vás dostali pojistné)</div>
+            <div class="account-num" id="accountDisplay">${S.account}</div>
+          </div>
+          <button class="account-change" type="button" id="btnChangeAccount">Změnit</button>
+        </div>
+        <div class="account-edit" id="accountEdit">
+          <div class="float-wrap" style="margin-bottom:8px">
+            <input class="input-field" type="text" id="inAccount" value="${S.account}" placeholder=" ">
+            <label class="float-label" for="inAccount">Nové číslo účtu</label>
+          </div>
+          <button class="btn btn--md btn--primary btn--full" id="btnSaveAccount" type="button">Uložit</button>
+        </div>
+      </div>
     </div>
-    <div class="fin-account" id="accountSection">
-      <span class="fin-account__num" id="accountDisplay">${ICO.email}&nbsp; Bankovní účet: ${S.account}</span>
-      <button class="fin-account__change" id="btnChangeAccount">Změnit</button>
+
+    <div class="instant-box">
+      <span class="instant-box__icon">${ICO.email}</span>
+      <span class="instant-box__text">Platbu odešleme okamžitě — pokud vaše banka podporuje okamžité platby, budou peníze na účtu během minut.</span>
     </div>
-    <div class="fin-card__footer">${ICO.flash} Výplata ihned – peníze na účtu během pár minut.</div>
   `;
-  await botCard(fc, 400);
 
-  // wire account change
+  const helperMount = payout.querySelector('#payoutHelperMount');
+  helperMount.appendChild(createHelperBox('payoutHelper', 'Nerozumíte částce?'));
+
+  const wrap = await botCard(payout, 400);
+  wrap.parentElement?.classList.add('msg--wide');
+
   document.getElementById('btnChangeAccount').addEventListener('click', () => step5_accountEdit());
+  document.getElementById('btnSaveAccount').addEventListener('click', () => saveStep5Account());
+  setupFloat(document.getElementById('inAccount'));
 
-  setBar(`
-    <button class="btn btn--lg btn--primary btn--full" id="btnConfirmPay">Potvrdit a odeslat žádost</button>
-  `);
-  document.getElementById('btnConfirmPay').addEventListener('click', async () => { clearBar(); userMsg('Potvrdit a odeslat žádost'); await step5_success(); });
+  setBar(`<button class="btn btn--lg btn--primary btn--full" id="btnConfirmPay">Odeslat peníze na účet</button>`);
+  document.getElementById('btnConfirmPay').addEventListener('click', async () => {
+    clearBar();
+    userMsg('Odeslat peníze na účet');
+    await step5_success();
+  });
+  scrollBot();
+}
+
+function payoutDamageSub(covered) {
+  if (!covered.length) return 'Pojištěné škody';
+  if (covered.length === 1) return covered[0].sub || covered[0].text;
+  return `${covered[0].text} + ${covered.length - 1} další ${covered.length - 1 === 1 ? 'škoda' : (covered.length - 1 < 5 ? 'škody' : 'škod')}`;
 }
 
 function step5_accountEdit() {
-  const section = document.getElementById('accountSection');
-  section.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:12px 16px;background:var(--grey-25)';
-  section.innerHTML = `
-    <div style="font-size:11px;font-weight:500;color:var(--grey-500);letter-spacing:.3px">Číslo bankovního účtu</div>
-    <input class="input-field" type="text" id="inAccount" value="${S.account}" style="height:48px;padding:0 14px;font-size:14px;border-radius:12px">
-    <button class="btn btn--md btn--primary btn--full" id="btnSaveAccount">Uložit</button>
-  `;
-  document.getElementById('btnSaveAccount').addEventListener('click', () => {
-    S.account = document.getElementById('inAccount').value.trim() || S.account;
-    section.style.cssText = '';
-    section.innerHTML = `
-      <span class="fin-account__num">${ICO.email}&nbsp; Bankovní účet: ${S.account}</span>
-      <button class="fin-account__change" id="btnChangeAccount2">Změnit</button>
-    `;
-    document.getElementById('btnChangeAccount2').addEventListener('click', () => step5_accountEdit());
-  });
+  const edit = document.getElementById('accountEdit');
+  if (!edit) return;
+  edit.classList.toggle('open');
+  if (edit.classList.contains('open')) {
+    const input = document.getElementById('inAccount');
+    setTimeout(() => input?.focus(), 0);
+  }
+  scrollBot();
+}
+
+function saveStep5Account() {
+  const input = document.getElementById('inAccount');
+  const display = document.getElementById('accountDisplay');
+  const edit = document.getElementById('accountEdit');
+  if (!input || !display) return;
+  S.account = input.value.trim() || S.account;
+  display.textContent = S.account;
+  edit?.classList.remove('open');
+  scrollBot();
 }
 
 async function step5_success() { updateProgress(100); progressCount = PROGRESS_TOTAL;
