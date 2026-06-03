@@ -179,6 +179,8 @@ textarea.input-field{height:auto;min-height:56px;max-height:120px;padding:16px;r
 .ai-loading-card{text-align:center;padding:10px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:16px}
 .ai-loading-icon{width:72px;height:72px;border-radius:50%;background:var(--light-bg);display:flex;align-items:center;justify-content:center;color:var(--gd-bg);animation:pulse 1.6s ease-in-out infinite}
 .ai-spinner{width:40px;height:40px;border:4px solid var(--light-bg);border-top-color:var(--gd-bg);border-radius:50%;animation:spin .85s linear infinite}
+.ai-loading-card.is-complete .ai-loading-icon{animation:none}
+.ai-loading-card.is-complete .ai-spinner{display:none}
 .ai-loading-title{font-size:18px;font-weight:600;color:var(--gd-bg)}
 .ai-loading-sub{font-size:13px;color:var(--light-helper);line-height:1.45;margin-top:4px}
 .ai-result-card{display:flex;flex-direction:column;gap:12px}
@@ -460,11 +462,7 @@ const CLIENT = {
 };
 
 const BASE_DAMAGES = [
-  {id:1, text:'Sklokeramická deska', sub:'Prasklá deska, varná zóna č. 2', covered:true, amount:8500},
-  {id:2, text:'Dlaždice v kuchyni', sub:'Prasklá dlaždice u kuchyňské linky', covered:true, amount:4200},
-  {id:3, text:'Kuchyňská linka', sub:'Poškozený povrch pracovní desky', covered:true, amount:5700},
-  // AI detected, not covered (opotřebení)
-  {id:4, text:'Nátěr stěny za varnou deskou', sub:'Popraskání nátěru — pravděpodobné opotřebení', covered:false, amount:0},
+  {id:1, text:'Sklokeramická deska', sub:'Prasklá deska, varná zóna č. 2', payoutSub:'Sklokeramická deska — výměna', covered:true, amount:12400},
 ];
 
 const DEDUCTIBLE = 2000;
@@ -1323,8 +1321,10 @@ function removeMedia(section, index) {
 async function runAnalysis() {
   const count = S.mediaFiles.detail.length + S.mediaFiles.overall.length;
   userMsg(`Fotodokumentace přiložena (${mediaCountLabel(count)})`);
-  await botCard(createAiLoadingCard(), 300);
+  const loadingWrap = await botCard(createAiLoadingCard(), 300);
   await sleep(2800);
+  loadingWrap.querySelector('.ai-loading-card')?.classList.add('is-complete');
+  updateChatPadding();
   await goStep3();
 }
 
@@ -1415,7 +1415,7 @@ function renderDmgItems(list) {
     `;
     row.querySelector('.found-dmg-name').textContent = d.text;
     const sub = row.querySelector('.found-dmg-sub');
-    sub.textContent = d.sub || (d.added ? 'Ručně přidáno — čeká na posouzení' : 'AI detekováno z fotodokumentace');
+    sub.textContent = d.sub || (d.added ? 'Doplněno uživatelem' : 'AI detekováno z fotodokumentace');
     row.querySelector('.found-dmg-edit').addEventListener('click', () => step3_edit(d.id));
     list.appendChild(row);
   });
@@ -1534,7 +1534,7 @@ function openDamageForm(damage = null) {
       damage.text = name;
       damage.sub = sub;
     } else {
-      S.damages.push({ id: S.nextId++, text: name, sub, covered: null, amount: 0, added: true });
+      S.damages.push({ id: S.nextId++, text: name, sub, coverageSub:'Opotřebení — mimo rozsah pojistky', covered: false, amount: 0, added: true });
     }
 
     renderDmgItems(document.getElementById('dmgList'));
@@ -1626,7 +1626,7 @@ function createCoverageItem(d, type) {
 
 function coverageSubText(d, type) {
   if (type === 'covered') return d.sub || 'Živelní škoda — součást pojistky';
-  if (type === 'uncovered') return d.sub || 'Opotřebení — mimo rozsah pojistky';
+  if (type === 'uncovered') return d.coverageSub || d.sub || 'Opotřebení — mimo rozsah pojistky';
   return d.sub || 'Ručně přidáno — čeká na posouzení';
 }
 
@@ -1791,7 +1791,7 @@ async function goStep5() {
 
 function payoutDamageSub(covered) {
   if (!covered.length) return 'Pojištěné škody';
-  if (covered.length === 1) return covered[0].sub || covered[0].text;
+  if (covered.length === 1) return covered[0].payoutSub || covered[0].sub || covered[0].text;
   return `${covered[0].text} + ${covered.length - 1} další ${covered.length - 1 === 1 ? 'škoda' : (covered.length - 1 < 5 ? 'škody' : 'škod')}`;
 }
 
